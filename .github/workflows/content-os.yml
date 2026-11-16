@@ -1,0 +1,105 @@
+name: Content OS — manual orchestration
+
+on:
+  workflow_dispatch:
+    inputs:
+      render_spec:
+        description: 'Existing renderer JSON spec path (optional)'
+        required: false
+        type: string
+      slot:
+        description: 'Existing publisher SLOT.json path (optional)'
+        required: false
+        type: string
+      gate1:
+        description: 'Existing GATE 1 approval JSON path (required for publishing)'
+        required: false
+        type: string
+      gate2:
+        description: 'Existing GATE 2 approval JSON path (required for publishing)'
+        required: false
+        type: string
+      publish:
+        description: 'Explicitly publish approved assets (default false)'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-os-manual
+  cancel-in-progress: false
+
+jobs:
+  content-os:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      RENDER_SPEC: ${{ inputs.render_spec }}
+      SLOT_PATH: ${{ inputs.slot }}
+      GATE1_PATH: ${{ inputs.gate1 }}
+      GATE2_PATH: ${{ inputs.gate2 }}
+      DO_PUBLISH: ${{ inputs.publish }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate inputs and both approval gates before any work
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path.cwd().resolve()
+          def existing(value, label):
+              if not value:
+                  raise SystemExit(f'BLOCKED: missing {label}')
+              path = (root / value).resolve()
+              if not path.is_relative_to(root) or not path.is_file():
+                  raise SystemExit(f'BLOCKED: {label} must be an existing file in the checkout')
+              return path
+          spec, slot = os.getenv('RENDER_SPEC'), os.getenv('SLOT_PATH')
+          if not spec and not slot:
+              raise SystemExit('BLOCKED: supply an existing render spec and/or slot')
+          if spec: existing(spec, 'render spec')
+          if slot: existing(slot, 'slot')
+          if os.getenv('DO_PUBLISH') == 'true':
+              s = json.loads(existing(slot, 'slot').read_text())
+              asset_id = s.get('asset_id')
+              for key, label in [('GATE1_PATH', 'GATE 1'), ('GATE2_PATH', 'GATE 2')]:
+                  approval = json.loads(existing(os.getenv(key), label).read_text())
+                  if not asset_id or approval.get('asset_id') != asset_id or not approval.get('approved_by') or not approval.get('approved_at'):
+                      raise SystemExit(f'BLOCKED: valid {label} approval required for matching asset')
+              raise SystemExit('BLOCKED: existing Claude network proxy and multi-platform authentication are not available in GitHub Actions; publishing disabled until connected')
+          print('Inputs valid. No publishing requested.')
+          PY
+      - name: Set up Node
+        if: ${{ inputs.render_spec != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing renderer dependencies and Chromium
+        if: ${{ inputs.render_spec != '' }}
+        working-directory: renderer
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Run existing renderer
+        if: ${{ inputs.render_spec != '' }}
+        env:
+          CHROME: /home/runner/.cache/ms-playwright/chromium-1194/chrome-linux/chrome
+        run: |
+          CHROME="$(find "$HOME/.cache/ms-playwright" -type f -name chrome -path '*/chrome-linux*/chrome' | head -n 1)"
+          if [ -z "$CHROME" ]; then echo 'BLOCKED: Chromium unavailable'; exit 1; fi
+          export CHROME
+          node renderer/render.js "$RENDER_SPEC" "$RUNNER_TEMP/content-os-render"
+      - name: Preserve rendered output as artifact
+        if: ${{ inputs.render_spec != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-os-render
+          path: ${{ runner.temp }}/content-os-render/
+          if-no-files-found: error
