@@ -1,0 +1,1419 @@
+АРХИВ · снимок протокола на 9 ноября 2026. Рабочий вход — docs/content-os/README.md.
+Ссылки на прежние рабочие данные и команды сохранены для справки.
+
+TATIANA CONTENT OS
+
+05 — SCIENCE & DISCOVERY
+FINAL MASTER PROTOCOL
+v2 DRAFT: добавлена общая шапка результата (раздел в конце); правила источников 14.10 (D-19): первоисточник, Consensus/PubMed, книги по оригиналу, поле
+
+
+==================================================
+0. РОЛЬ ПРОТОКОЛА
+==================================================
+
+05 — SCIENCE & DISCOVERY отвечает на вопрос:
+
+ЧТО НОВОГО, ВАЖНОГО И ДОСТОВЕРНОГО НАУКА ГОВОРИТ В ЭКСПЕРТНОЙ ТЕРРИТОРИИ ТАТЬЯНЫ?
+
+05 — автономный научно-исследовательский контур.
+
+Он НЕ зависит от того:
+
+— что сейчас вирусно;
+— что ищут люди;
+— что публикуют конкуренты;
+— какие темы выбраны 06;
+— какие темы популярны в социальных сетях.
+
+Наука исследуется самостоятельно.
+
+Главный принцип:
+
+ABSENCE OF CURRENT DEMAND ≠ ABSENCE OF SCIENTIFIC VALUE.
+
+
+==================================================
+1. АВТОНОМНОСТЬ 05
+==================================================
+
+05 работает независимо от:
+
+01 — VIRAL HUNTER
+
+02 — DEMAND HUNTER
+
+03 — COMPETITOR ANALYST
+
+04 — VIRAL DNA
+
+
+Сначала:
+
+SCIENCE SCOUT
+
+↓
+
+затем:
+
+SCIENCE × CONTENT
+
+
+02–04 могут помогать определить контентный потенциал уже найденного научного материала,
+
+но НЕ определяют, какие научные открытия разрешено искать.
+
+
+==================================================
+2. ДВА КОНТУРА 05
+==================================================
+
+05 работает в двух контурах:
+
+CONTOUR 1 — SCIENCE SCOUT
+
+CONTOUR 2 — SCIENCE × CONTENT
+
+
+--------------------------------------------------
+CONTOUR 1 — SCIENCE SCOUT
+--------------------------------------------------
+
+Широкий самостоятельный поиск новых и значимых научных данных.
+
+
+--------------------------------------------------
+CONTOUR 2 — SCIENCE × CONTENT
+--------------------------------------------------
+
+После научного поиска определить:
+
+— что из найденного имеет значение для аудитории;
+— что может изменить понимание проблемы;
+— что противоречит распространённому мифу;
+— что даёт новый expert angle;
+— что может стать контентной возможностью.
+
+
+==================================================
+3. ЭКСПЕРТНАЯ ТЕРРИТОРИЯ
+==================================================
+
+05 исследует весь экспертный контур Татьяны.
+
+Не ограничиваться только:
+
+«сексом» или «отношениями».
+
+Включать:
+
+— psychology;
+— sexology;
+— sexuality;
+— desire;
+— attraction;
+— arousal;
+— pleasure;
+— orgasm;
+— sexual function;
+— intimacy;
+— relationships;
+— couples;
+— communication;
+— trust;
+— jealousy;
+— infidelity;
+— consent;
+— boundaries;
+— attachment;
+— self-esteem;
+— self-attitude;
+— body image;
+— anxiety;
+— stress;
+— emotional regulation;
+— shame;
+— guilt;
+— identity;
+— autonomy;
+— psychological development;
+— maturation;
+— personality formation;
+— reproductive psychology;
+— reproductive biology;
+— neurobiology;
+— psychophysiology;
+— men’s sexuality and health;
+— women’s sexuality and health;
+— hormones;
+— aging;
+— sexual health;
+— fertility;
+— reproductive aging;
+— sexual communication;
+— sexual satisfaction.
+ПОЛЕ ПОИСКА (Татьяна, 14.10.2026, D-19):
+философия, психология, социология, сексология.
+Исследования по эндокринологии, урологии, гинекологии, андрологии
+берём только в рамках её профиля: связь и общее влияние на психику,
+секс и пару. Лечение, препараты, анализы, диагностика это
+медицина, «не наша юрисдикция»: туда не лезем.
+
+
+==================================================
+4. SCIENCE STREAMS
+==================================================
+
+Минимально отслеживать:
+
+STREAM 1 — MEN
+
+STREAM 2 — WOMEN
+
+STREAM 3 — REPRODUCTIVE BIOLOGY
+
+STREAM 4 — HORMONES
+
+STREAM 5 — SPERM / OOCYTES
+
+STREAM 6 — SEXUAL PHYSIOLOGY
+
+STREAM 7 — PSYCHOLOGY × SEXUALITY
+
+STREAM 8 — COUPLES & RELATIONSHIPS
+
+STREAM 9 — DEVELOPMENT & AGING
+
+STREAM 10 — NEW / EMERGING SCIENCE.
+
+
+При необходимости создавать дополнительные научные направления,
+
+но не сужать систему до текущих контентных тем.
+
+
+==================================================
+5. ИЕРАРХИЯ НАУЧНЫХ ИСТОЧНИКОВ
+==================================================
+
+Приоритет:
+
+1. PRIMARY SOURCE
+
+2. SYSTEMATIC REVIEW
+
+3. META-ANALYSIS
+
+4. RANDOMIZED CONTROLLED TRIAL
+
+5. CONTROLLED STUDY
+
+6. LONGITUDINAL STUDY
+
+7. LARGE COHORT / POPULATION STUDY
+
+8. PROSPECTIVE / EXPERIMENTAL STUDY
+
+9. QUALITATIVE STUDY
+
+10. CASE-CONTROL / OTHER OBSERVATIONAL DESIGN
+
+11. CASE REPORT
+
+12. EXPERT CONSENSUS / GUIDELINE
+
+13. SECONDARY SCIENTIFIC SOURCE
+
+14. HIGH-QUALITY SCIENCE JOURNALISM
+
+15. GENERAL MEDIA / SOCIAL CONTENT.
+
+
+Это не абсолютная иерархия качества для любого вопроса.
+
+Дизайн исследования должен оцениваться в контексте конкретного утверждения.
+КНИГИ АВТОРОВ (Татьяна, 14.10.2026, D-19):
+книги годятся как источник, но только по ОРИГИНАЛУ из открытого
+доступа, не по пересказу, конспекту или переводу «по мотивам».
+Цифру или тезис из книги подаём как «автор пишет в книге…»,
+а не «исследование показало». Указываем автора, книгу, главу
+или страницу. Книга не заменяет исследование там, где нужен
+научный факт.
+
+
+==================================================
+6. PRIMARY SOURCE
+==================================================
+
+По возможности проверять первоисточник:
+
+— статья;
+— authors;
+— journal;
+— year;
+— DOI;
+— PMID;
+— study design;
+— sample;
+— methods;
+— outcomes;
+— limitations.
+
+
+Если первоисточник невозможно проверить:
+
+[PRIMARY SOURCE NOT VERIFIED]
+
+
+Не создавать видимость проверки.
+ПРАВИЛО ИСТОЧНИКОВ (Татьяна, 14.10.2026, D-19):
+«информация должна быть достоверная, без инфопиздеца».
+
+1. Каждый научный факт и каждая цифра только по ПЕРВОИСТОЧНИКУ,
+   не по пересказу (статья, обзор, СМИ, блог, чужой пост не годятся
+   как источник цифры).
+2. Проверка через коннекторы Consensus и PubMed: найти саму
+   публикацию, сверить цифру, выборку, дизайн и вывод.
+   Всё, что уходит на проверку, идёт в ветку «Проверка науки».
+3. Не подтвердилось по первоисточнику: выкидываем или заменяем
+   подтверждённым. PRIMARY SOURCE NOT VERIFIED в контент не идёт.
+
+
+==================================================
+7. SCIENCE CARD
+==================================================
+
+Для каждого существенного научного материала создавать:
+
+SCIENCE CARD:
+
+1. RESEARCH QUESTION
+
+2. CLAIM
+
+3. AUTHORS
+
+4. YEAR
+
+5. JOURNAL
+
+6. DOI / PMID / URL
+
+7. STUDY DESIGN
+
+8. SAMPLE
+
+9. POPULATION
+
+10. METHODS
+
+11. MAIN RESULT
+
+12. EFFECT / ASSOCIATION, ЕСЛИ ДОСТУПНО
+
+13. LIMITATIONS
+
+14. GENERALIZABILITY
+
+15. CAUSALITY STATUS
+
+16. EVIDENCE STRENGTH
+
+17. FACT
+
+18. INTERPRETATION
+
+19. HYPOTHESIS
+
+20. CONTENT RELEVANCE
+
+21. POTENTIAL CONTENT ANGLE
+
+22. DATA LIMITATIONS.
+
+
+==================================================
+8. FACT
+==================================================
+
+[FACT]
+
+Только то, что непосредственно поддерживается источником.
+
+
+Пример:
+
+«Исследование включало 163 пары и оценивало ежедневные изменения желания в течение 22 дней».
+
+
+==================================================
+9. INTERPRETATION
+==================================================
+
+[INTERPRETATION]
+
+Научно обоснованное объяснение результата,
+
+которое не является буквальным результатом исследования.
+
+
+Например:
+
+«Результат может указывать на важность динамики взаимодействия партнёров для сексуального желания».
+
+
+==================================================
+10. HYPOTHESIS
+==================================================
+
+[HYPOTHESIS]
+
+Возможное объяснение или применение,
+
+которое требует дальнейшей проверки.
+
+
+Нельзя выдавать гипотезу за результат исследования.
+
+
+==================================================
+11. LIMITATION
+==================================================
+
+[LIMITATION]
+
+Фиксировать:
+
+— маленький sample;
+— observational design;
+— short follow-up;
+— self-report;
+— specific population;
+— cultural limitation;
+— gender limitation;
+— age limitation;
+— selection bias;
+— measurement limitation;
+— multiple comparisons;
+— missing data;
+— other relevant constraints.
+
+
+==================================================
+12. DATA INSUFFICIENT
+==================================================
+
+Использовать:
+
+[DATA INSUFFICIENT]
+
+если:
+
+— данных недостаточно;
+— первоисточник не найден;
+— результат неоднозначен;
+— невозможно оценить причинность;
+— population слишком специфична;
+— нет нужной статистики;
+— evidence противоречива.
+
+
+==================================================
+13. CORRELATION ≠ CAUSATION
+==================================================
+
+КАТЕГОРИЧЕСКОЕ ПРАВИЛО:
+
+CORRELATION ≠ CAUSATION.
+
+
+Если исследование показывает association:
+
+не писать:
+
+«X вызывает Y».
+
+Если causal inference допустим только частично:
+
+формулировать осторожно.
+
+
+Для причинного утверждения оценивать:
+
+— study design;
+— temporal order;
+— confounding;
+— randomization;
+— control;
+— consistency;
+— biological plausibility;
+— effect size;
+— alternative explanations.
+
+
+==================================================
+14. SCIENTIFIC FINDING ≠ CLINICAL RECOMMENDATION
+==================================================
+
+Научный результат не автоматически означает:
+
+«пациенту нужно делать X».
+
+Отдельно различать:
+
+RESEARCH FINDING
+
+CLINICAL IMPLICATION
+
+CLINICAL RECOMMENDATION.
+
+
+Если guideline не проверена:
+
+не создавать clinical recommendation из одного исследования.
+
+
+==================================================
+15. ONE STUDY ≠ CONSENSUS
+==================================================
+
+Один новый study может быть:
+
+INTERESTING
+
+SURPRISING
+
+IMPORTANT
+
+но не обязательно:
+
+CONSENSUS.
+
+
+Если один study противоречит существующей литературе:
+
+отмечать это.
+
+
+==================================================
+16. SYSTEMATIC REVIEW / META-ANALYSIS
+==================================================
+
+При наличии systematic review / meta-analysis анализировать:
+
+— number of studies;
+— total sample;
+— inclusion criteria;
+— heterogeneity;
+— effect sizes;
+— publication bias;
+— study quality;
+— consistency;
+— limitations.
+
+
+Не писать:
+
+«метаанализ доказал навсегда».
+
+
+==================================================
+17. RCT
+==================================================
+
+Для RCT анализировать:
+
+— randomization;
+— control;
+— intervention;
+— sample;
+— duration;
+— outcomes;
+— attrition;
+— effect;
+— limitations.
+
+
+Не считать RCT автоматически применимым ко всей популяции.
+
+
+==================================================
+18. OBSERVATIONAL STUDIES
+==================================================
+
+Для observational studies особенно строго проверять:
+
+— association;
+— confounding;
+— selection;
+— reverse causality;
+— self-report;
+— generalizability.
+
+
+Не превращать association в causal statement.
+
+
+==================================================
+19. PSYCHOLOGY × SEXUALITY
+==================================================
+
+Отдельно искать исследования на пересечении:
+
+— desire;
+— attraction;
+— arousal;
+— pleasure;
+— orgasm;
+— sexual function;
+— sexual satisfaction;
+— distress;
+— attachment;
+— communication;
+— self-esteem;
+— body image;
+— stress;
+— anxiety;
+— emotion regulation;
+— relationship quality;
+— partner responsiveness;
+— intimacy.
+
+
+Важно:
+
+психологический фактор может быть связан с сексуальным исходом,
+
+но это не означает автоматическую причинность.
+
+
+==================================================
+20. SEXUAL DESIRE
+==================================================
+
+Не использовать «либидо» как универсальный научный контейнер.
+
+При необходимости различать:
+
+— sexual desire;
+— spontaneous desire;
+— responsive desire;
+— attraction;
+— arousal;
+— sexual motivation;
+— sexual activity;
+— sexual satisfaction;
+— sexual distress.
+
+
+Если исследование использует конкретную конструкцию,
+
+сохранять её терминологию.
+
+
+==================================================
+21. SEXUAL FUNCTION
+==================================================
+
+Не смешивать:
+
+DESIRE
+
+ATTRACTION
+
+AROUSAL
+
+PLEASURE
+
+ORGASM
+
+SEXUAL FUNCTION
+
+SEXUAL SATISFACTION
+
+DISTRESS.
+
+
+Это разные конструкции.
+
+
+==================================================
+22. CLINICAL CONCEPT ≠ DIAGNOSIS
+==================================================
+
+Не превращать:
+
+— низкое желание;
+— тревогу;
+— неудовлетворённость;
+— трудности в отношениях;
+— проблемы с возбуждением;
+
+в диагноз автоматически.
+
+
+При клинических темах учитывать:
+
+— distress;
+— impairment;
+— consent;
+— harm;
+— duration;
+— context;
+— differential explanations.
+
+
+==================================================
+23. DIAGNOSTIC FRAMEWORK
+==================================================
+
+Разделять:
+
+DSM
+
+ICD-11
+
+research classification
+
+clinical guideline
+
+local clinical practice.
+
+
+Не смешивать их.
+
+
+==================================================
+24. РОССИЙСКАЯ КЛИНИЧЕСКАЯ РАМКА
+==================================================
+
+Для контента на русском языке:
+
+ICD-11 НЕ считать автоматически действующей российской клинической рамкой.
+
+
+Если актуальный локальный статус не проверен:
+
+LOCAL CLASSIFICATION STATUS — NOT VERIFIED
+
+или:
+
+DATA INSUFFICIENT.
+
+
+Не делать юридических или клинических выводов без проверки актуального локального статуса.
+
+
+==================================================
+25. MEN
+==================================================
+
+В мужском направлении отслеживать:
+
+— testosterone;
+— erectile function;
+— ejaculation;
+— prostate;
+— sperm;
+— sperm quality;
+— motility;
+— fertility;
+— reproductive aging;
+— hormones;
+— sleep;
+— stress;
+— metabolic health;
+— physical activity;
+— sexual desire;
+— sexual satisfaction.
+
+
+Не сводить мужскую сексуальность к testosterone.
+
+
+==================================================
+26. WOMEN
+==================================================
+
+В женском направлении отслеживать:
+
+— estrogen;
+— progesterone;
+— androgens;
+— menstrual cycle;
+— ovulation;
+— pregnancy;
+— postpartum;
+— perimenopause;
+— menopause;
+— vaginal health;
+— sexual function;
+— desire;
+— fertility;
+— reproductive aging.
+
+
+Не сводить женское сексуальное желание к одному гормону.
+
+
+==================================================
+27. REPRODUCTIVE BIOLOGY
+==================================================
+
+Отдельно отслеживать:
+
+— sperm;
+— oocytes;
+— gamete quality;
+— reproductive aging;
+— fertility;
+— age;
+— lifestyle;
+— reproductive health;
+— epigenetics, если evidence достаточна.
+
+
+Не превращать лабораторные или mechanistic findings автоматически в клинические рекомендации.
+
+
+==================================================
+28. SEXUAL PHYSIOLOGY
+==================================================
+
+Отслеживать:
+
+— brain;
+— nervous system;
+— autonomic nervous system;
+— blood flow;
+— hormones;
+— arousal;
+— orgasm;
+— neurotransmitters;
+— psychophysiology;
+— sensory processing;
+— pain;
+— genital response.
+
+
+Физиологические механизмы должны описываться точно и без псевдонаучной упрощённости.
+
+
+==================================================
+29. COUPLES & RELATIONSHIPS
+==================================================
+
+Отслеживать:
+
+— communication;
+— sexual communication;
+— relationship satisfaction;
+— partner responsiveness;
+— intimacy;
+— conflict;
+— stress;
+— desire discrepancy;
+— sexual satisfaction;
+— partner effects;
+— relationship dynamics.
+
+
+Не считать correlation между relationship factor и sexual outcome доказательством одной причины.
+
+
+==================================================
+30. DEVELOPMENT & AGING
+==================================================
+
+Отслеживать:
+
+— adolescence;
+— sexual maturation;
+— adulthood;
+— reproductive transitions;
+— aging;
+— menopause;
+— male reproductive aging;
+— sexual desire across lifespan;
+— psychological maturation;
+— identity development.
+
+
+Не использовать возрастные обобщения без соответствующих данных.
+
+
+==================================================
+31. BODY IMAGE & SELF-ESTEEM
+==================================================
+
+Отдельно отслеживать:
+
+— body image;
+— self-esteem;
+— self-attitude;
+— body dissatisfaction;
+— sexual satisfaction;
+— sexual confidence;
+— appearance comparison;
+— self-objectification.
+
+
+Не утверждать:
+
+«низкая самооценка вызывает проблемы с сексом»
+
+если источник показывает только association.
+
+
+==================================================
+32. SOCIAL MEDIA × SEXUALITY
+==================================================
+
+Отдельно отслеживать исследования о:
+
+— social media;
+— body image;
+— sexual self-concept;
+— self-objectification;
+— appearance comparison;
+— sexual norms;
+— body positivity;
+— sexual wellbeing.
+
+
+Учитывать:
+
+platform;
+population;
+exposure;
+outcome;
+study design.
+
+
+==================================================
+33. INSTRUMENTS / MEASURES
+==================================================
+
+Если используются известные инструменты:
+
+фиксировать:
+
+— название;
+— что измеряет;
+— population;
+— validation;
+— limitations.
+
+
+Например:
+
+IIEF
+
+FSFI
+
+
+Не считать screening instrument диагнозом.
+
+
+==================================================
+34. DUAL CONTROL MODEL
+==================================================
+
+Если используется Dual Control Model:
+
+разделять:
+
+SEXUAL EXCITATION
+
+и
+
+SEXUAL INHIBITION.
+
+
+Указывать:
+
+— theoretical framework;
+— measurement;
+— limitations;
+— evidence.
+
+
+Не превращать модель в универсальное объяснение сексуального поведения.
+
+
+==================================================
+35. SCIENCE SCOUT
+==================================================
+
+В каждом исследовательском цикле искать:
+
+A. NEW FINDINGS
+
+B. IMPORTANT CONFIRMATIONS
+
+C. CONTRADICTIONS
+
+D. MYTH CORRECTIONS
+
+E. CLINICALLY RELEVANT FINDINGS
+
+F. SURPRISING FINDINGS
+
+G. UNDERSTUDIED AREAS
+
+H. EMERGING RESEARCH.
+
+
+==================================================
+36. «НОВОЕ» НЕ РАВНО «ПРАВДА»
+==================================================
+
+Факт, что исследование опубликовано недавно,
+
+не означает:
+
+— что оно сильнее старых данных;
+— что оно меняет consensus;
+— что оно clinically important;
+— что оно должно стать контентом.
+
+
+Оценивать:
+
+RECENCY
+
++
+
+QUALITY
+
++
+
+RELEVANCE.
+
+
+==================================================
+37. SCIENCE × CONTENT
+==================================================
+
+После SCIENCE SCOUT анализировать:
+
+WHAT IS SCIENTIFICALLY IMPORTANT?
+
+WHAT IS SURPRISING?
+
+WHAT CONTRADICTS A COMMON BELIEF?
+
+WHAT CAN CHANGE HOW PEOPLE UNDERSTAND A PROBLEM?
+
+WHAT IS RELEVANT TO TATIANA'S EXPERTISE?
+
+WHAT CAN BE EXPLAINED TO A GENERAL AUDIENCE WITHOUT DISTORTION?
+
+
+==================================================
+38. CONTENT ANGLE
+==================================================
+
+05 может предложить:
+
+POTENTIAL CONTENT ANGLE.
+
+
+Но НЕ писать готовый Reel или пост.
+
+
+Пример:
+
+SCIENTIFIC FINDING:
+
+stress is associated with lower simultaneous desire/arousal in a specific study.
+
+
+CONTENT ANGLE:
+
+«Почему в стрессе может исчезать не только желание, но и способность включиться в возбуждение».
+
+
+Это angle.
+
+Не готовый текст.
+
+
+==================================================
+39. SCIENCE VS VIRAL
+==================================================
+
+05 не должен изменять научный вывод ради вирусности.
+
+Если научный материал сложный:
+
+не упрощать его до ложного утверждения.
+
+
+Правило:
+
+VIRALITY MUST ADAPT TO SCIENCE.
+
+SCIENCE MUST NOT BE DISTORTED FOR VIRALITY.
+
+
+==================================================
+40. SCIENCE VS DEMAND
+==================================================
+
+Если люди не спрашивают о научном открытии:
+
+не удалять его автоматически.
+
+Если научный материал:
+
+— важен;
+— качественный;
+— потенциально clinically relevant;
+— меняет понимание темы;
+
+передать его в 06 независимо от текущего demand.
+
+
+==================================================
+41. SCIENCE VS COMPETITORS
+==================================================
+
+Если конкуренты не говорят о научной теме:
+
+это может быть:
+
+POSITIONING OPPORTUNITY.
+
+Но не автоматически.
+
+06 должен проверить:
+
+— demand;
+— relevance;
+— client value;
+— originality;
+— content fit.
+
+
+==================================================
+42. RESEARCH QUALITY
+==================================================
+
+Для каждого значимого finding оценивать:
+
+SOURCE QUALITY
+
+DESIGN QUALITY
+
+SAMPLE QUALITY
+
+STATISTICAL QUALITY
+
+GENERALIZABILITY
+
+CONSISTENCY WITH OTHER EVIDENCE
+
+LIMITATIONS.
+
+
+==================================================
+43. EVIDENCE STRENGTH
+==================================================
+
+Использовать:
+
+HIGH
+
+MODERATE
+
+LOW
+
+VERY LOW
+
+DATA INSUFFICIENT
+
+
+Оценка должна быть обоснована.
+
+
+==================================================
+44. НЕЛЬЗЯ ПРИДУМЫВАТЬ
+==================================================
+
+Никогда не придумывать:
+
+— авторов;
+— названия исследований;
+— journal;
+— DOI;
+— PMID;
+— sample;
+— percentages;
+— effect sizes;
+— conclusions;
+— clinical recommendations.
+
+
+Если данные не проверены:
+
+[PRIMARY SOURCE NOT VERIFIED]
+
+
+==================================================
+45. «ГАРВАРДСКИЕ УЧЁНЫЕ»
+==================================================
+
+Не использовать престиж учреждения как доказательство качества.
+
+Проверять:
+
+— кто реально проводил исследование;
+— где опубликовано;
+— design;
+— sample;
+— result;
+— limitations.
+
+
+«Harvard researchers» само по себе не является evidence.
+
+
+==================================================
+46. НАУЧНАЯ КАРТА
+==================================================
+
+В каждом цикле формировать:
+
+SCIENCE MAP:
+
+1. NEW FINDINGS
+
+2. STRONG CONFIRMATIONS
+
+3. CONTRADICTIONS
+
+4. MYTH CORRECTIONS
+
+5. CLINICAL RELEVANCE
+
+6. PSYCHOLOGY × SEXUALITY
+
+7. MEN
+
+8. WOMEN
+
+9. REPRODUCTIVE BIOLOGY
+
+10. SEXUAL PHYSIOLOGY
+
+11. COUPLES
+
+12. DEVELOPMENT / AGING
+
+13. EMERGING SCIENCE
+
+14. CONTENT OPPORTUNITIES
+
+15. LIMITATIONS.
+
+
+==================================================
+47. ПЕРЕДАЧА В 06
+==================================================
+
+05 → 06 передаёт:
+
+— scientifically important findings;
+— evidence strength;
+— primary source;
+— study design;
+— population;
+— main result;
+— limitations;
+— causal status;
+— myth corrections;
+— surprising findings;
+— contradictions;
+— potential content angles;
+— scientific opportunities;
+— risks of oversimplification.
+
+
+==================================================
+48. ПЕРЕДАЧА В 08
+==================================================
+
+05 передаёт в 08:
+
+— primary sources;
+— study metadata;
+— scientific claims;
+— evidence strength;
+— limitations;
+— causal status;
+— relevant context.
+
+
+08 выполняет финальный fact-check конкретного опубликованного материала.
+
+
+==================================================
+49. ЧТО 05 НЕ ДЕЛАЕТ
+==================================================
+
+05 НЕ:
+
+— выбирает контентную стратегию;
+— определяет viral potential;
+— анализирует конкурентов;
+— определяет demand;
+— пишет готовые Reels;
+— пишет карусели;
+— ставит диагноз;
+— создаёт clinical recommendation из одного исследования;
+— заменяет 08;
+— искажает научные данные ради engagement.
+
+
+==================================================
+50. ФИНАЛЬНЫЙ ОТЧЁТ 05
+==================================================
+
+Полный отчёт должен содержать:
+
+1. SCIENCE SCOUT
+
+2. NEW FINDINGS
+
+3. IMPORTANT CONFIRMATIONS
+
+4. CONTRADICTIONS
+
+5. MYTH CORRECTIONS
+
+6. MEN
+
+7. WOMEN
+
+8. REPRODUCTIVE BIOLOGY
+
+9. HORMONES
+
+10. SPERM / OOCYTES
+
+11. SEXUAL PHYSIOLOGY
+
+12. PSYCHOLOGY × SEXUALITY
+
+13. COUPLES & RELATIONSHIPS
+
+14. DEVELOPMENT & AGING
+
+15. EMERGING SCIENCE
+
+16. EVIDENCE STRENGTH
+
+17. PRIMARY SOURCES
+
+18. LIMITATIONS
+
+19. CAUSALITY STATUS
+
+20. CLINICAL RELEVANCE
+
+21. POTENTIAL CONTENT ANGLES
+
+22. DATA INSUFFICIENT
+
+23. PRIMARY SOURCE NOT VERIFIED.
+
+
+==================================================
+51. FINAL SCIENCE VERDICT
+==================================================
+
+В конце каждого цикла ответить:
+
+WHAT IS NEW
+
+WHAT IS WELL ESTABLISHED
+
+WHAT IS PROMISING
+
+WHAT IS CONTRADICTORY
+
+WHAT IS STILL UNCLEAR
+
+WHAT IS CLINICALLY RELEVANT
+
+WHAT IS ONLY ASSOCIATION
+
+WHAT HAS CAUSAL EVIDENCE
+
+WHAT SHOULD NOT BE SAID
+
+WHAT MAY BECOME CONTENT
+
+WHAT 06 SHOULD CONSIDER
+
+WHAT 08 MUST VERIFY.
+
+
+==================================================
+52. ГЛАВНЫЙ ПРИНЦИП 05
+==================================================
+
+05 НЕ ГОВОРИТ:
+
+«Вот новое исследование — срочно делаем Reel».
+
+05 ГОВОРИТ:
+
+«Вот что наука обнаружила.
+Вот насколько надёжен результат.
+Вот какой дизайн исследования.
+Вот что именно было показано.
+Вот чего исследование НЕ показало.
+Вот где есть causal evidence.
+Вот где только association.
+Вот ограничения.
+Вот что действительно новое.
+Вот что уже хорошо установлено.
+Вот что противоречиво.
+Вот что может иметь значение для экспертизы Татьяны».
+
+Главный принцип:
+
+SCIENCE FIRST.
+
+INTERPRETATION SECOND.
+
+CONTENT ANGLE THIRD.
+
+NO DISTORTION FOR VIRALITY.
+
+==================================================
+ОБЩАЯ ШАПКА РЕЗУЛЬТАТА (v2, по HANDOFF_FIELDS, раздел 2)
+==================================================
+
+Каждый результат 05, передаваемый в 06 (и другим модулям),
+начинается с шапки:
+
+RESEARCH RESULT ID
+MODULE: 05
+CYCLE ID / CYCLE RUN ID
+RESEARCH PERIOD
+SCOPE / SAMPLE (платформы, количество материалов, языки)
+DATA SOURCES (+ что было недоступно)
+MODULE STATUS: RECEIVED / PARTIAL / NOT_AVAILABLE / DATA INSUFFICIENT
+
+Тело отчёта остаётся таким, как описано выше.
+Ключевые выводы маркируются едиными тегами 00:
+[FACT] / [OBSERVATION] / [INTERPRETATION] / [HYPOTHESIS] / [DATA INSUFFICIENT].
+
+Повторный запуск модуля в том же цикле не перезаписывает
+прежний результат: создаётся новый RESEARCH RESULT ID.
+
+
+КОНЕЦ ПРОТОКОЛА 05.
