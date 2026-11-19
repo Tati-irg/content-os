@@ -10,9 +10,11 @@ The Graph API token is injected by the network proxy; it is never passed here.
 
 usage: publish_carousel.py SLIDES_DIR --id ASSET_ID --caption CAPTION.txt [--publish --approval APPROVED.json]
 """
-import argparse, json, os, subprocess, sys, time, urllib.parse, urllib.request
+import argparse, json, os, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 from PIL import Image
+
+from meta_auth import meta_headers
 
 GRAPH = 'https://graph.facebook.com/v21.0'
 IG_USER = '17841402153358869'  # @irg_psy
@@ -20,14 +22,27 @@ REPO = Path(__file__).resolve().parent.parent
 RAW = 'https://raw.githubusercontent.com/redkova13-ai/content-os/main/'
 
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 def api(method, path, **params):
     data = urllib.parse.urlencode(params).encode() if method == 'POST' else None
     url = f'{GRAPH}/{path}' + ('' if method == 'POST' else '?' + urllib.parse.urlencode(params))
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, data=data, method=method), timeout=120) as r:
-            return json.load(r)
+        request = urllib.request.Request(url, data=data, method=method, headers=meta_headers(url))
+        with urllib.request.build_opener(NoRedirect()).open(request, timeout=120) as response:
+            body = json.load(response)
+    except ValueError as e:
+        if isinstance(e, json.JSONDecodeError):
+            sys.exit('Meta Graph API returned an invalid response')
+        sys.exit(str(e))
     except urllib.error.HTTPError as e:
-        sys.exit(f'Graph API error {e.code}: {e.read().decode()[:500]}')
+        sys.exit(f'Meta Graph API: HTTP {e.code}')
+    if 'error' in body:
+        sys.exit('Meta Graph API returned an error')
+    return body
 
 
 def wait_ready(cid, tries=30):

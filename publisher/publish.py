@@ -11,7 +11,8 @@ built but not sent. A JSON report per platform is printed.
 --publish needs a GATE 2 approval JSON whose asset_id matches the slot. Platforms then go out
 in the order ig, threads, vk, tg; a failure on one does not stop the others.
 
-Auth: Instagram, Threads and VK tokens are injected by the network proxy and never passed here.
+Auth: Facebook and Instagram use META_PAGE_TOKEN from the environment.
+Threads and VK rely on proxy authentication.
 Telegram reads TELEGRAM_BOT_TOKEN from the environment; it is never printed.
 See publisher/README.md for the SLOT_JSON format.
 """
@@ -20,6 +21,8 @@ from pathlib import Path
 
 import requests
 from PIL import Image
+
+from meta_auth import meta_headers
 
 REPO = Path(__file__).resolve().parent.parent
 RAW = 'https://raw.githubusercontent.com/redkova13-ai/content-os/main/'
@@ -478,12 +481,23 @@ def hosting_needs(plans):
 # ---------------------------------------------------------------- Meta Graph (IG + Threads)
 
 def graph(base, method, path, **params):
-    r = requests.request(method, f'{base}/{path}', params=params if method == 'GET' else None,
-                         data=params if method == 'POST' else None, timeout=120)
+    url = f'{base}/{path}'
+    options = {}
+    if base == IG_GRAPH:
+        try:
+            options = {'headers': meta_headers(url), 'allow_redirects': False}
+        except ValueError as e:
+            raise Fail(str(e)) from None
+    r = requests.request(method, url, params=params if method == 'GET' else None,
+                         data=params if method == 'POST' else None, timeout=120, **options)
+    if base == IG_GRAPH and not 200 <= r.status_code < 300:
+        raise Fail(f'Meta Graph API: HTTP {r.status_code}')
     try:
         body = r.json()
     except ValueError:
         body = {'raw': r.text[:300]}
+    if base == IG_GRAPH and 'error' in body:
+        raise Fail('Meta Graph API returned an error')
     if r.status_code >= 400 or 'error' in body:
         raise Fail(f'{base.split("/")[2]} {path}: HTTP {r.status_code} {json.dumps(body, ensure_ascii=False)[:500]}')
     return body
@@ -509,14 +523,18 @@ def ig_reels_container(pl, urls):
         params['cover_url'] = urls['cover.jpg']
     c = graph(IG_GRAPH, 'POST', f'{IG_USER}/media', **params)
     data = pl['video'].read_bytes()
-    r = requests.post(c['uri'], data=data, timeout=600,
-                      headers={'offset': '0', 'file_size': str(len(data))})
-    if r.status_code < 400:
+    try:
+        headers = meta_headers(c['uri'], scheme='OAuth')
+    except ValueError as e:
+        raise Fail(str(e)) from None
+    headers.update(offset='0', file_size=str(len(data)))
+    r = requests.post(c['uri'], data=data, timeout=600, headers=headers, allow_redirects=False)
+    if 200 <= r.status_code < 300:
         return c['id'], len(data)
     # The proxy rejects large rupload bodies (502 seen above ~30 MB); let IG fetch the hosted copy.
     vurl = urls.get('video' + pl['video'].suffix.lower())
     if r.status_code < 500 or not vurl:
-        raise Fail(f'rupload: HTTP {r.status_code} {r.text[:300]}')
+        raise Fail(f'rupload: HTTP {r.status_code}')
     params.pop('upload_type')
     c = graph(IG_GRAPH, 'POST', f'{IG_USER}/media', video_url=vurl, **params)
     return c['id'], len(data)
@@ -793,8 +811,11 @@ def run_max(pl, urls, publish):
 # ---------------------------------------------------------------- main
 
 def redact(msg):
-    tok = os.environ.get('TELEGRAM_BOT_TOKEN')
-    return msg.replace(tok, '<TELEGRAM_BOT_TOKEN>') if tok else msg
+    for name in ('TELEGRAM_BOT_TOKEN', 'META_PAGE_TOKEN'):
+        token = os.environ.get(name)
+        if token:
+            msg = msg.replace(token, f'<{name}>')
+    return msg
 
 
 def main():

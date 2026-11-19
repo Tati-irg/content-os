@@ -18,7 +18,7 @@ python3 publisher/publish.py SLOT.json --publish --approval APPROVED.json  # н�
   `asset_id` должен совпадать со слотом. Если хоть одна площадка не прошла проверку — не
   публикуется ничего.
 - Порядок публикации: ig → threads → vk → tg. Ошибка на одной площадке не останавливает остальные.
-- Токены IG/Threads/VK подставляет прокси; Telegram берёт `TELEGRAM_BOT_TOKEN` из окружения.
+- Facebook и Instagram берут `META_PAGE_TOKEN` из окружения. В Codex Cloud прокси заменяет заполнитель HTTP-секрета для разрешённых доменов Meta. Threads/VK используют авторизацию прокси. Telegram берёт `TELEGRAM_BOT_TOKEN` из окружения.
   Токены нигде не печатаются.
 - Картинки для IG/Threads конвертируются в JPEG и пушатся в `media/<asset_id>/` этого репозитория
   (raw.githubusercontent.com служит хостингом). Тестовые файлы потом удалять отдельным коммитом.
