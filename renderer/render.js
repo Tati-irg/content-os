@@ -1,14 +1,11 @@
 // Content OS carousel renderer: JSON spec -> PNG slides 1080x1350.
 // Templates T01–T03 follow templates/TEMPLATES.md (layout differs, palette is shared).
 // Usage: node render.js spec.json out_dir
-const { chromium } = require('playwright-core');
+const { font, withRenderer } = require('./browser');
 const path = require('path');
 const fs = require('fs');
 
 const W = 1080, H = 1350;
-const CHROME = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-const NM = path.join(__dirname, 'node_modules/@fontsource');
-const font = (pkg, w, it) => `<link rel="stylesheet" href="file://${NM}/${pkg}/${w}${it ? '-italic' : ''}.css">`;
 const FONTS = [
   font('montserrat', 500), font('montserrat', 700), font('montserrat', 800), font('montserrat', 800, true),
   font('lora', 600), font('lora', 600, true),
@@ -49,15 +46,15 @@ const md = s => s == null ? '' : esc(s)
   .replace(/(^|[\s>«(])([а-яёА-ЯЁ]{1,2}) /g, '$1$2 ').replace(/(^|[\s>«(])([а-яёА-ЯЁ]{1,2}) /g, '$1$2 ')
   .replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
 
-let PHOTO_DIR = '/mnt/project-files/photo-bank/ACTIVE';
-const photoUrl = id => {
-  const f = fs.readdirSync(PHOTO_DIR).find(x => x.startsWith(id + '_') || x === id);
+const PHOTO_DIR = '/mnt/project-files/photo-bank/ACTIVE';
+const photoFile = (id, photoDir) => {
+  const f = fs.readdirSync(photoDir).find(x => x.startsWith(id + '_') || x === id);
   if (!f) throw new Error(`photo ${id} not found in ACTIVE photo bank`);
-  return 'file://' + path.join(PHOTO_DIR, f);
+  return path.join(photoDir, f);
 };
 // photo as background: zoom = image width relative to the box, focus = [x%, y%]
 const ph = (s, box, zoom = 1, focus = [50, 30]) => s.photo
-  ? `background:url('${photoUrl(s.photo)}') ${(s.focus || focus)[0]}% ${(s.focus || focus)[1]}%/${(s.zoom || zoom) * 100}% auto no-repeat;`
+  ? `background:url('/photo') ${(s.focus || focus)[0]}% ${(s.focus || focus)[1]}%/${(s.zoom || zoom) * 100}% auto no-repeat;`
   : 'background:#8E9299;';
 
 /* ======================= T01 dark editorial ======================= */
@@ -228,32 +225,28 @@ function validate(spec) {
     if (s.layout === 'list' && !(s.items && s.items.length)) errs.push(`${at}: list needs items`);
     if (s.layout === 'steps' && !(s.steps && s.steps.length)) errs.push(`${at}: steps needs steps`);
     if (s.layout === 'quote' && !s.quote) errs.push(`${at}: quote needs quote`);
-    if (s.photo) try { photoUrl(s.photo); } catch (e) { errs.push(`${at}: ${e.message}`); }
+    if (s.photo) try { photoFile(s.photo, spec.photo_dir || PHOTO_DIR); } catch (e) { errs.push(`${at}: ${e.message}`); }
   });
   return errs;
 }
 
 async function render(spec, outDir) {
-  if (spec.photo_dir) PHOTO_DIR = spec.photo_dir;
   const errs = validate(spec);
   if (errs.length) throw Object.assign(new Error('BLOCKED:\n' + errs.join('\n')), { blocked: true });
   const T = TEMPLATES[spec.template];
   const acc = ACCENTS[spec.accent || { T01: 'wine', T02: 'terracotta', T03: 'indigo' }[spec.template]];
   fs.mkdirSync(outDir, { recursive: true });
-  const browser = await chromium.launch({ executablePath: CHROME });
-  const page = await browser.newPage({ viewport: { width: W, height: H } });
   const report = [];
   const N = spec.slides.length;
-  try {
+  await withRenderer({ width: W, height: H }, async (page, load) => {
     for (let i = 0; i < N; i++) {
       const s = spec.slides[i];
       const n = spec.template === 'T02' ? `${String(i + 1).padStart(2, '0')}/${String(N).padStart(2, '0')}` : `${i + 1}/${N}`;
       const html = `<!doctype html><html><head><meta charset="utf-8">${FONTS}<style>:root{--acc:${acc}}*{box-sizing:border-box;margin:0;padding:0}
 html,body{width:${W}px;height:${H}px;overflow:hidden}.s{position:relative;width:${W}px;height:${H}px;overflow:hidden}${T.css}${N === 1 ? '.arrow,.num,.count,.top .c{display:none}' : ''}</style></head><body>${T[s.layout](s, n)}</body></html>`;
-      const tmp = path.join(outDir, `_slide.html`);
-      fs.writeFileSync(tmp, html);
-      await page.goto('file://' + tmp, { waitUntil: 'load' });
-      await page.evaluate(() => document.fonts.ready);
+      const assets = new Map();
+      if (s.photo) assets.set('/photo', photoFile(s.photo, spec.photo_dir || PHOTO_DIR));
+      await load(html, assets);
       // background photos are not always painted by 'load': decode them explicitly
       await page.evaluate(() => Promise.all([...document.querySelectorAll('[style*="url("]')].map(el => {
         const m = el.style.backgroundImage.match(/url\(["']?(.*?)["']?\)/);
@@ -289,10 +282,9 @@ html,body{width:${W}px;height:${H}px;overflow:hidden}.s{position:relative;width:
       await page.waitForTimeout(150);
       const file = path.join(outDir, `slide_${String(i + 1).padStart(2, '0')}.png`);
       await page.screenshot({ path: file });
-      fs.unlinkSync(tmp);
       report.push({ slide: i + 1, layout: s.layout, file: path.basename(file), text_scale: fit.zoom, fits: fit.ok });
     }
-  } finally { await browser.close(); }
+  });
   fs.writeFileSync(path.join(outDir, 'render_report.json'), JSON.stringify({ template: spec.template, accent: spec.accent || null, slides: report }, null, 2));
   return report;
 }
