@@ -779,7 +779,10 @@ def run_tg(pl, publish):
                     'body_bytes': len(prep.body or b''),
                     'text_chars': len(data.get('text', data.get('caption', '')))}
             if publish:
-                r = requests.Session().send(prep, timeout=300)
+                with requests.Session() as session:
+                    # Prepared requests need explicit proxy and CA settings from the environment.
+                    settings = session.merge_environment_settings(prep.url, {}, None, None, None)
+                    r = session.send(prep, timeout=300, **settings)
                 body = r.json()
                 if not body.get('ok'):
                     raise Fail(f'Telegram {method}: {body.get("error_code")} {body.get("description")}')
