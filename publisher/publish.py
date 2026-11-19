@@ -26,10 +26,10 @@ from pathlib import Path
 import requests
 from PIL import Image
 
+from media_hosting import MEDIA_BRANCH, MEDIA_PUSH_REF, media_url, require_media_origin
 from meta_auth import meta_headers
 
 REPO = Path(__file__).resolve().parent.parent
-RAW = 'https://raw.githubusercontent.com/redkova13-ai/content-os/main/'
 
 IG_GRAPH = 'https://graph.facebook.com/v21.0'
 IG_USER = '17841402153358869'  # @irg_psy
@@ -433,6 +433,10 @@ PLANNERS = {'ig': plan_ig, 'fb': plan_fb, 'threads': plan_threads, 'vk': plan_vk
 
 def host(asset_id, files):
     """files: {published name: local path}. Images become JPEG; returns {name: raw url}."""
+    try:
+        require_media_origin(REPO)
+    except ValueError as e:
+        raise Fail(str(e)) from None
     dest = REPO / 'media' / asset_id
     dest.mkdir(parents=True, exist_ok=True)
     for name, src in files.items():
@@ -445,10 +449,10 @@ def host(asset_id, files):
     subprocess.run(git + ['add', str(dest)], check=True)
     if subprocess.run(git + ['diff', '--cached', '--quiet']).returncode:
         subprocess.run(git + ['commit', '-qm', f'media: {asset_id}', '--', str(dest)], check=True)
-        if subprocess.run(git + ['push', '-q', 'origin', 'HEAD:main']).returncode:
-            subprocess.run(git + ['pull', '-q', '--rebase', 'origin', 'main'], check=True)
-            subprocess.run(git + ['push', '-q', 'origin', 'HEAD:main'], check=True)
-    urls = {n: RAW + f'media/{asset_id}/{n}' for n in files}
+        if subprocess.run(git + ['push', '-q', 'origin', MEDIA_PUSH_REF]).returncode:
+            subprocess.run(git + ['pull', '-q', '--rebase', 'origin', MEDIA_BRANCH], check=True)
+            subprocess.run(git + ['push', '-q', 'origin', MEDIA_PUSH_REF], check=True)
+    urls = {n: media_url(asset_id, n) for n in files}
     for u in urls.values():  # raw CDN can lag a few seconds after push
         for _ in range(30):
             try:

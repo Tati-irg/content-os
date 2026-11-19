@@ -14,12 +14,12 @@ import argparse, json, os, subprocess, sys, time, urllib.error, urllib.parse, ur
 from pathlib import Path
 from PIL import Image
 
+from media_hosting import MEDIA_PUSH_REF, media_url, require_media_origin
 from meta_auth import meta_headers
 
 GRAPH = 'https://graph.facebook.com/v21.0'
 IG_USER = '17841402153358869'  # @irg_psy
 REPO = Path(__file__).resolve().parent.parent
-RAW = 'https://raw.githubusercontent.com/redkova13-ai/content-os/main/'
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -60,6 +60,10 @@ def host_images(slides_dir, asset_id):
     pngs = sorted(Path(slides_dir).glob('slide_*.png'))
     if not 2 <= len(pngs) <= 10:
         sys.exit(f'Instagram carousel needs 2–10 slides, found {len(pngs)}')
+    try:
+        require_media_origin(REPO)
+    except ValueError as e:
+        sys.exit(str(e))
     dest = REPO / 'media' / asset_id
     dest.mkdir(parents=True, exist_ok=True)
     for p in pngs:  # Instagram accepts JPEG only
@@ -68,8 +72,8 @@ def host_images(slides_dir, asset_id):
     subprocess.run(git + ['add', str(dest)], check=True)
     if subprocess.run(git + ['diff', '--cached', '--quiet']).returncode:
         subprocess.run(git + ['commit', '-qm', f'media: {asset_id}'], check=True)
-        subprocess.run(git + ['push', '-q', 'origin', 'HEAD:main'], check=True)
-    urls = [RAW + f'media/{asset_id}/{p.stem}.jpg' for p in pngs]
+        subprocess.run(git + ['push', '-q', 'origin', MEDIA_PUSH_REF], check=True)
+    urls = [media_url(asset_id, p.stem + '.jpg') for p in pngs]
     for u in urls:  # raw CDN can lag a few seconds after push
         for _ in range(20):
             try:
