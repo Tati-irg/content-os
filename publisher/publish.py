@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Publish one post (a "slot") to Instagram, Threads, VK and Telegram.
+"""Publish one post (a "slot") to the selected platforms.
 
-usage: publish.py SLOT_JSON [--publish --approval APPROVED.json] [--only ig,tg,vk,threads]
+usage: publish.py SLOT_JSON [--publish --approval APPROVED.json] [--only ig,tg,threads]
 
 Without --publish this is a DRY RUN: everything is validated, Instagram/Threads containers are
 created and waited on (they stay invisible until media_publish/threads_publish, which is not
-called), VK photos/docs are uploaded privately (wall.post is not called), Telegram requests are
-built but not sent. A JSON report per platform is printed.
+called), and Telegram requests are built but not sent. A JSON report per platform is printed.
+VK receives Instagram posts via Om repost. Direct VK requires explicit selection with
+--only vk and can upload photos or documents privately during a dry run.
 
 --publish needs a GATE 2 approval JSON whose asset_id matches the slot. Platforms then go out
-in the order ig, threads, vk, tg; a failure on one does not stop the others.
+in the order ig, fb, threads, tg, max by default; direct VK, if selected, runs
+before Telegram. A failure on one platform does not stop the others.
 
 Auth: Facebook and Instagram use META_PAGE_TOKEN from the environment.
 Threads sends THREADS_ACCESS_TOKEN as a Bearer header for the proxy.
@@ -42,6 +44,8 @@ MAX_API = 'https://platform-api.max.ru'
 MAX_CHAT = '-70980778945137'  # MAX channel «Психика без табу»
 
 ORDER = ['ig', 'fb', 'threads', 'vk', 'tg', 'max']
+REPOST_ROUTES = {'vk': 'Instagram via Om repost'}
+DEFAULT_PLATFORMS = set(ORDER) - REPOST_ROUTES.keys()
 KINDS = {'carousel', 'image', 'reels', 'story', 'text'}
 LIMITS = {'ig_caption': 2200, 'ig_hashtags': 30, 'tg_text': 4096, 'tg_caption': 1024,
           'vk_text': 16000, 'threads_text': 500, 'max_text': 4000}
@@ -833,13 +837,14 @@ def main():
     ap.add_argument('slot')
     ap.add_argument('--publish', action='store_true', help='actually post (needs --approval)')
     ap.add_argument('--approval', help='GATE 2 approval JSON: {"asset_id":..., "approved_by":..., "approved_at":...}')
-    ap.add_argument('--only', help='comma list of platforms: ig,fb,threads,vk,tg,max')
+    ap.add_argument('--only', help='comma-separated platforms: ig,fb,threads,vk,tg,max '
+                                   '(direct VK requires explicit selection)')
     a = ap.parse_args()
 
     s = load_slot(a.slot)
     if not s['asset_id'] or s['kind'] not in KINDS:
         sys.exit(f'slot needs asset_id and kind in {sorted(KINDS)}')
-    only = set(a.only.split(',')) if a.only else set(ORDER)
+    only = set(a.only.split(',')) if a.only else DEFAULT_PLATFORMS
     if only - set(ORDER):
         sys.exit(f'--only accepts {",".join(ORDER)}')
     if a.publish:
@@ -864,7 +869,10 @@ def main():
             report['platforms'][k] = {'status': 'skipped', 'reason': 'stories go to Instagram only'}
             continue
         if k not in only:
-            report['platforms'][k] = {'status': 'skipped', 'reason': 'not in --only'}
+            reason = 'not in --only'
+            if not a.only and k in REPOST_ROUTES:
+                reason = f'auto-repost from {REPOST_ROUTES[k]}'
+            report['platforms'][k] = {'status': 'skipped', 'reason': reason}
             continue
         try:
             plans[k] = PLANNERS[k](s, s['platforms'][k])
