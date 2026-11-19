@@ -17,6 +17,7 @@ Auth: Facebook and Instagram use META_PAGE_TOKEN from the environment.
 Threads sends THREADS_ACCESS_TOKEN as a Bearer header for the proxy.
 VK relies on proxy authentication.
 Telegram reads TELEGRAM_BOT_TOKEN from the environment; it is never printed.
+MAX sends MAX_BOT_TOKEN from the environment in the Authorization header.
 See publisher/README.md for the SLOT_JSON format.
 """
 import argparse, json, os, re, shutil, subprocess, sys, tempfile, time
@@ -399,6 +400,9 @@ def plan_max(s, cfg):
     """MAX channel (Тата 30.10): the same text and picture as Telegram, one post.
     Images go by public URL: the MAX upload host is not reachable from here, so a Reels
     goes as its cover + text."""
+    if 'tg' in s['platforms']:
+        tg_cfg = s['platforms']['tg']
+        cfg = {**cfg, 'text_file': tg_cfg.get('text_file'), 'text': tg_cfg.get('text')}
     tg = plan_tg(s, cfg)
     text = read_text(cfg, 'text_file', 'text')
     if len(text) > LIMITS['max_text']:
@@ -802,17 +806,21 @@ def run_tg(pl, publish):
 # ---------------------------------------------------------------- MAX
 
 def run_max(pl, urls, publish):
-    """One channel message: text + picture by URL. The proxy injects the bot token."""
+    """One channel message: text + picture by URL."""
     body = {'text': pl['text']} if pl['text'] else {}
     if pl['image']:
         body['attachments'] = [{'type': 'image', 'payload': {'url': urls['max_image.jpg']}}]
     rep = {'kind': pl['kind'], 'text_chars': len(pl['text']), 'image': bool(pl['image'])}
     if not publish:
         return rep
+    token = os.environ.get('MAX_BOT_TOKEN')
+    if not token:
+        raise Fail('MAX_BOT_TOKEN is not set')
     for _ in range(6):  # a fresh attachment can be "not ready" for a few seconds
-        r = requests.post(f'{MAX_API}/messages', params={'chat_id': MAX_CHAT}, json=body, timeout=120)
+        r = requests.post(f'{MAX_API}/messages', params={'chat_id': MAX_CHAT}, json=body,
+                          headers={'Authorization': token}, timeout=120, allow_redirects=False)
         res = r.json()
-        if r.ok and 'message' in res:
+        if 200 <= r.status_code < 300 and 'message' in res:
             rep['mid'] = res['message'].get('body', {}).get('mid')
             return rep
         # a fresh attachment can be "not ready"; a just-pushed image URL can fail to fetch at first (30.10)
@@ -825,7 +833,7 @@ def run_max(pl, urls, publish):
 # ---------------------------------------------------------------- main
 
 def redact(msg):
-    for name in ('TELEGRAM_BOT_TOKEN', 'META_PAGE_TOKEN', 'THREADS_ACCESS_TOKEN'):
+    for name in ('TELEGRAM_BOT_TOKEN', 'META_PAGE_TOKEN', 'THREADS_ACCESS_TOKEN', 'MAX_BOT_TOKEN'):
         token = os.environ.get(name)
         if token:
             msg = msg.replace(token, f'<{name}>')
