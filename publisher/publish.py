@@ -11,8 +11,9 @@ built but not sent. A JSON report per platform is printed.
 --publish needs a GATE 2 approval JSON whose asset_id matches the slot. Platforms then go out
 in the order ig, threads, vk, tg; a failure on one does not stop the others.
 
-Auth: Instagram, Threads and VK tokens are injected by the network proxy and never passed here.
-Telegram reads TELEGRAM_BOT_TOKEN from the environment; it is never printed.
+Auth: Instagram and VK rely on network proxy injection. Threads sends the configured
+THREADS_ACCESS_TOKEN binding as a Bearer header for the proxy. Telegram reads
+TELEGRAM_BOT_TOKEN from the environment. Neither token is printed.
 See publisher/README.md for the SLOT_JSON format.
 """
 import argparse, json, os, re, shutil, subprocess, sys, tempfile, time
@@ -478,14 +479,24 @@ def hosting_needs(plans):
 # ---------------------------------------------------------------- Meta Graph (IG + Threads)
 
 def graph(base, method, path, **params):
+    options = {}
+    if base == TH_GRAPH:
+        token = os.environ.get('THREADS_ACCESS_TOKEN')
+        if not token:
+            raise Fail('THREADS_ACCESS_TOKEN is not set')
+        options = {
+            'headers': {'Authorization': f'Bearer {token}'},
+            'allow_redirects': False,
+        }
     r = requests.request(method, f'{base}/{path}', params=params if method == 'GET' else None,
-                         data=params if method == 'POST' else None, timeout=120)
+                         data=params if method == 'POST' else None, timeout=120, **options)
     try:
         body = r.json()
     except ValueError:
         body = {'raw': r.text[:300]}
-    if r.status_code >= 400 or 'error' in body:
-        raise Fail(f'{base.split("/")[2]} {path}: HTTP {r.status_code} {json.dumps(body, ensure_ascii=False)[:500]}')
+    if r.status_code >= (300 if base == TH_GRAPH else 400) or 'error' in body:
+        detail = redact(json.dumps(body, ensure_ascii=False))[:500]
+        raise Fail(f'{base.split("/")[2]} {path}: HTTP {r.status_code} {detail}')
     return body
 
 
@@ -793,8 +804,11 @@ def run_max(pl, urls, publish):
 # ---------------------------------------------------------------- main
 
 def redact(msg):
-    tok = os.environ.get('TELEGRAM_BOT_TOKEN')
-    return msg.replace(tok, '<TELEGRAM_BOT_TOKEN>') if tok else msg
+    for name in ('TELEGRAM_BOT_TOKEN', 'THREADS_ACCESS_TOKEN'):
+        token = os.environ.get(name)
+        if token:
+            msg = msg.replace(token, f'<{name}>')
+    return msg
 
 
 def main():
