@@ -64,6 +64,14 @@ bus. Отдельные видимые каналы требуют реальн�
 python3 coordinator/orchestrator.py --root /private/content-os serve --interval 2
 ```
 
+### Railway
+
+В корне репозитория находятся `Dockerfile` и `railway.json`. К сервису подключается persistent
+volume с mount path `/data`. Точка входа `coordinator/railway_start.py` намеренно блокирует запуск,
+пока не заданы `CONTENT_OS_LIVE=YES` и реальные команды всех ролей в
+`CONTENT_OS_COMMANDS_JSON`. Поэтому тестовые synthetic-артефакты не могут случайно попасть в
+рабочий процесс. Telegram token хранится только в закрытых Variables Railway.
+
 Для cron допустима команда `telegram-poll-once`. Ingress принимает только точные команды
 `/approve ASSET GATE [note]`, `/reject ASSET GATE [note]`, `/status ASSET`, только из настроенной
 группы и от разрешённых user IDs. Все остальные сообщения лишь аудируются и не меняют состояние.
