@@ -132,7 +132,7 @@ class Orchestrator:
     def telegram_topic(self, event):
         stage = event.get("stage") or event.get("gate")
         if stage in GATES:
-            key = "publication/gates"
+            key = "decisions"
         elif stage in ("text07", "text07_final"):
             key = "text07"
         elif stage in ("audit", "package"):

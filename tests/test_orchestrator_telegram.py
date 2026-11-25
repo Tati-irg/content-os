@@ -26,7 +26,8 @@ class Telegram(unittest.TestCase):
         self.config = self.root / "config.json"
         self.config.write_text(json.dumps({"telegram": {"control_chat_id": "-1001",
           "allowed_user_ids": [42], "topics": {"research": 11, "plan06": 12,
-          "text07": 13, "factcheck08": 14, "visual09": 15, "publication/gates": 16}}}))
+          "text07": 13, "factcheck08": 14, "visual09": 15, "publication/gates": 16,
+          "decisions": 17}}}))
         self.calls, self.updates = [], []
 
     def tearDown(self): self.temp.cleanup()
@@ -52,6 +53,9 @@ class Telegram(unittest.TestCase):
             row = app.db.execute("SELECT status FROM telegram_deliveries ORDER BY event_id DESC LIMIT 1").fetchone()
             self.assertEqual(row["status"], "sent")
             self.assertNotIn("super-secret", json.dumps(self.calls))
+            app.event("asset", 1, "gate.waiting", {"gate": "gate1", "label": "[GATE]"})
+            decisions = [v for m, v in self.calls if m == "sendMessage" and v.get("message_thread_id") == ["17"]]
+            self.assertEqual(len(decisions), 1)
 
     @patch.dict(os.environ, {"TELEGRAM_BOT_TOKEN": "super-secret"}, clear=False)
     def test_auth_duplicate_approve_reject_and_status(self):

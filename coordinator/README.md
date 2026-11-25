@@ -55,7 +55,7 @@ bus. Отдельные видимые каналы требуют реальн�
 
 ```json
 {"telegram":{"topics":{"research":11,"plan06":12,"text07":13,"factcheck08":14,
-"visual09":15,"publication/gates":16},"allowed_user_ids":[12345]}}
+"visual09":15,"publication/gates":16,"decisions":17},"allowed_user_ids":[12345]}}
 ```
 
 После проверки запускается постоянный worker:
