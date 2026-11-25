@@ -9,6 +9,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+from unittest.mock import Mock, patch
 
 lib = c.CDLL('libseccomp.so.2')
 lib.seccomp_init.argtypes = [c.c_uint32]
@@ -70,7 +71,7 @@ def sample_package(directory):
 with tempfile.TemporaryDirectory() as directory:
     cases = Path(directory)
     original = sample_package(cases)
-    for scenario in ('ready', 'changed-text', 'changed-png', 'old-version', 'no-gate1', 'no-gate2', 'no-release'):
+    for scenario in ('ready', 'changed-text', 'changed-png', 'old-version', 'no-gate1', 'no-gate2', 'no-release', 'revoked'):
         pilot = cases / scenario
         shutil.copytree(original, pilot)
         manifest = pilot/'manifest.json'
@@ -83,6 +84,10 @@ with tempfile.TemporaryDirectory() as directory:
             (pilot/state['gate1_evidence']['file']).unlink()
         elif scenario == 'no-gate2':
             (pilot/state['versions']['v2']['results']['gate2']['file']).unlink()
+        elif scenario == 'revoked':
+            state['status'] = 'revoked'
+            state['versions']['v2']['status'] = 'revoked'
+            manifest.write_text(json.dumps(state))
         slot = pilot/'unused-slot.json'
         for script in ('publish.py', 'publish_carousel.py'):
             cmd = [sys.executable, str(publisher/script), '--manifest', str(manifest),
@@ -100,6 +105,7 @@ with tempfile.TemporaryDirectory() as directory:
                             'old-version': 'not active',
                             'no-gate1': 'approvals/gate1.json',
                             'no-gate2': 'v2/gate2.md',
+                            'revoked': 'publication approval was revoked',
                             'no-release': 'separate --release authorization is required'}
             if scenario == 'ready':
                 assert result.returncode == 0 and json.loads(result.stdout)['package_ready'], result
@@ -107,3 +113,49 @@ with tempfile.TemporaryDirectory() as directory:
                 assert result.returncode != 0 and expectations[scenario] in result.stderr, result
                 assert not (publisher.parent/'media'/state['asset_id']).exists()
             print(f'{script}: {scenario}: OK')
+
+    sys.path.insert(0, str(publisher))
+    import publish
+
+    render = original / 'v2/render'
+    for number in (6, 4, 3, 5):
+        shutil.copyfile(render/'slide_01.png', render/f'slide_{number:02}.png')
+    slot = {'kind': 'carousel', 'slides_dir': render,
+            'platforms': {'tg': {'slides': 1, 'text': 'A different Telegram text'}}}
+    approved = {'text': 'Full approved MAX text', 'image_count': 6}
+    plan = publish.plan_max(slot, approved)
+    names = [f'slide_{number:02}.jpg' for number in range(1, 7)]
+    assert list(plan['images']) == names
+    assert publish.hosting_needs({'max': plan}) == plan['images']
+    assert publish.run_max(plan, {}, False)['image_count'] == 6
+
+    for kind, config in (('carousel', {'image_count': 6}), ('carousel', {'text': approved['text']}),
+                         ('carousel', {**approved, 'image_count': 1}), ('reels', approved),
+                         ('story', approved)):
+        try:
+            publish.plan_max({**slot, 'kind': kind}, config)
+        except publish.Fail:
+            pass
+        else:
+            raise AssertionError(f'MAX accepted invalid input for {kind}')
+
+    urls = {name: f'https://example.invalid/{name}' for name in names}
+    expected_types = ['image'] * 6
+    for types, reply_text in ((expected_types, approved['text']), (['image'], approved['text']),
+                              (expected_types + ['file'], approved['text']), (expected_types, 'Wrong text')):
+        response = Mock(status_code=200)
+        response.json.return_value = {'message': {'body': {
+            'mid': 'fixture', 'text': reply_text,
+            'attachments': [{'type': kind} for kind in types],
+        }}}
+        with patch.dict('os.environ', {'MAX_BOT_TOKEN': 'fixture'}), \
+                patch.object(publish.requests, 'post', return_value=response) as post:
+            receipt = publish.run_max(plan, urls, True)
+        post.assert_called_once()
+        payload = post.call_args.kwargs['json']
+        assert payload['text'] == approved['text']
+        assert [a['payload']['url'] for a in payload['attachments']] == list(urls.values())
+        assert receipt['mid'] == 'fixture'
+        mismatch = types != expected_types or reply_text != approved['text']
+        assert (receipt.get('status') == 'error') == mismatch
+    print('MAX: six ordered images, explicit text, format blocks and response validation: OK')

@@ -393,32 +393,29 @@ def plan_fb(s, cfg):
 
 
 def plan_max(s, cfg):
-    """MAX channel (Тата 30.10): the same text and picture as Telegram, one post.
-    Images go by public URL: the MAX upload host is not reachable from here, so a Reels
-    goes as its cover + text."""
-    if 'tg' in s['platforms']:
-        tg_cfg = s['platforms']['tg']
-        cfg = {**cfg, 'text_file': tg_cfg.get('text_file'), 'text': tg_cfg.get('text')}
-    tg = plan_tg(s, cfg)
+    """Plan one MAX post with its explicitly approved text and media."""
+    kind = s['kind']
+    if kind not in ('carousel', 'image', 'text'):
+        raise Fail(f'MAX cannot send approved format "{kind}"; approve a separate adaptation')
     text = read_text(cfg, 'text_file', 'text')
+    if not text:
+        raise Fail('MAX requires explicitly approved full standalone text')
+    if TG_CROSS_REF.search(text):
+        raise Fail('MAX text must be standalone')
     if len(text) > LIMITS['max_text']:
         raise Fail(f'MAX text is {len(text)} chars, limit {LIMITS["max_text"]}')
-    img = None
-    for method, _, files in tg['steps']:
-        if method == 'sendPhoto':
-            img = files['photo']
-            break
-        if method == 'sendMediaGroup':
-            img = next((p for p in files.values() if not is_video(p)), None)
-            break
-        if method == 'sendVideo':
-            if not s['cover']:
-                raise Fail('MAX needs a Reels cover (video upload is not reachable)')
-            img = need_file(s['cover'], 'media.cover', exts={'.png', '.jpg', '.jpeg'})
-            break
-    if not text and not img:
-        raise Fail('MAX post needs text or a picture')
-    return {'kind': s['kind'], 'text': text, 'image': img}
+    images = {}
+    if kind == 'carousel':
+        ordered = slides(s, 2, 12)
+        if any(is_video(p) for p in ordered):
+            raise Fail('MAX cannot send this carousel with video; approve a separate adaptation')
+        expected = cfg.get('image_count')
+        if type(expected) is not int or expected != len(ordered):
+            raise Fail(f'MAX image_count must match the approved carousel ({len(ordered)} images)')
+        images = {slide_name(p): p for p in ordered}
+    elif kind == 'image':
+        images = {'max_image.jpg': visual(s)}
+    return {'kind': kind, 'text': text, 'images': images}
 
 
 PLANNERS = {'ig': plan_ig, 'fb': plan_fb, 'threads': plan_threads, 'vk': plan_vk, 'tg': plan_tg,
@@ -464,9 +461,7 @@ def host(asset_id, files):
 
 def hosting_needs(plans):
     """Which local files Instagram/Threads must fetch by URL."""
-    need = {}
-    if plans.get('max', {}).get('image'):
-        need['max_image.jpg'] = plans['max']['image']
+    need = dict(plans.get('max', {}).get('images', {}))
     for k in ('ig', 'fb', 'threads'):
         pl = plans.get(k)
         if not pl:
@@ -806,22 +801,31 @@ def run_tg(pl, publish):
 # ---------------------------------------------------------------- MAX
 
 def run_max(pl, urls, publish):
-    """One channel message: text + picture by URL."""
-    body = {'text': pl['text']} if pl['text'] else {}
-    if pl['image']:
-        body['attachments'] = [{'type': 'image', 'payload': {'url': urls['max_image.jpg']}}]
-    rep = {'kind': pl['kind'], 'text_chars': len(pl['text']), 'image': bool(pl['image'])}
+    """Send the full post as one channel message."""
+    rep = {'kind': pl['kind'], 'text_chars': len(pl['text']), 'image_count': len(pl['images'])}
     if not publish:
         return rep
+    body = {'text': pl['text']}
+    if pl['images']:
+        body['attachments'] = [
+            {'type': 'image', 'payload': {'url': urls[name]}} for name in pl['images']
+        ]
     token = os.environ.get('MAX_BOT_TOKEN')
     if not token:
         raise Fail('MAX_BOT_TOKEN is not set')
     for _ in range(6):  # a fresh attachment can be "not ready" for a few seconds
-        r = requests.post(f'{MAX_API}/messages', params={'chat_id': MAX_CHAT}, json=body,
+        r = requests.post(f'{MAX_API}/messages',
+                          params={'chat_id': MAX_CHAT, 'disable_link_preview': 'true'}, json=body,
                           headers={'Authorization': token}, timeout=120, allow_redirects=False)
         res = r.json()
-        if 200 <= r.status_code < 300 and 'message' in res:
-            rep['mid'] = res['message'].get('body', {}).get('mid')
+        if 200 <= r.status_code < 300:
+            received = (res.get('message') or {}).get('body') or {}
+            rep['mid'] = received.get('mid')
+            types = [a.get('type') for a in (received.get('attachments') or [])]
+            if not rep['mid'] or types != ['image'] * rep['image_count'] or received.get('text') != pl['text']:
+                rep.update(status='error', received_attachment_count=len(types),
+                           received_image_count=types.count('image'),
+                           error='MAX returned a different post; verify the message before retrying')
             return rep
         # a fresh attachment can be "not ready"; a just-pushed image URL can fail to fetch at first (30.10)
         if res.get('code') != 'attachment.not.ready' and 'Failed to upload image' not in str(res.get('message')):
@@ -891,15 +895,13 @@ def run_cli(a, directory):
 
     report = {'asset_id': s['asset_id'], 'kind': s['kind'], 'mode': 'publish' if a.publish else 'dry_run',
               'platforms': {}}
-    if 'tg' in s['platforms'] and 'max' not in s['platforms']:
-        s['platforms']['max'] = s['platforms']['tg']  # MAX mirrors Telegram (Тата 30.10)
     if not s['platforms']:
         sys.exit('BLOCKED: slot names no platform (add "ig": {} etc.), nothing was published')
     plans = {}
     for k in ORDER:
         if k not in s['platforms']:
             continue
-        if s['kind'] == 'story' and k != 'ig':  # TG/VK get stories via her own auto-repost
+        if s['kind'] == 'story' and k not in ('ig', 'max'):  # TG/VK get stories via auto-repost
             report['platforms'][k] = {'status': 'skipped', 'reason': 'stories go to Instagram only'}
             continue
         if k not in only:
@@ -920,7 +922,12 @@ def run_cli(a, directory):
 
     if not a.publish:
         for k, plan in plans.items():
-            result = run_tg(plan, False) if k == 'tg' else {'kind': plan['kind']}
+            if k == 'tg':
+                result = run_tg(plan, False)
+            elif k == 'max':
+                result = run_max(plan, {}, False)
+            else:
+                result = {'kind': plan['kind']}
             report['platforms'][k] = {**result, 'status': 'dry_run_ok'}
         print(json.dumps(report, ensure_ascii=False, indent=2))
         sys.exit(1 if invalid else 0)
@@ -956,7 +963,7 @@ def run_cli(a, directory):
                 r = run_max(plans[k], urls, a.publish)
             else:
                 r = run_tg(plans[k], a.publish)
-            r['status'] = 'published' if a.publish else 'dry_run_ok'
+            r.setdefault('status', 'published' if a.publish else 'dry_run_ok')
         except (Fail, requests.RequestException, KeyError, ValueError, OSError) as e:
             r = {'status': 'error', 'error': redact(f'{type(e).__name__}: {e}')}
         report['platforms'][k] = r

@@ -58,12 +58,16 @@ const ph = (s, box, zoom = 1, focus = [50, 30]) => s.photo
   : 'background:#8E9299;';
 
 // Keep the scrim on the text side and leave the rest of the photo unfiltered.
-function coverPhoto(s, zoom, focus, defaultAngle, light = false) {
+function coverPhoto(s, zoom, focus, defaultAngle, light = false, fullBleed = true) {
   if (!s.photo) return '';
   const { angle = defaultAngle, opacity = .28, span = 55 } = s.photo_gradient || {};
   const tint = light ? '245,245,244' : '43,44,48';
-  return `<div style="position:absolute;inset:0;${ph(s, 0, zoom, focus)}"></div>
-   <div style="position:absolute;inset:0;background:linear-gradient(${angle}deg,rgba(${tint},${opacity}),rgba(${tint},0) ${span}%)"></div>`;
+  const [x, y] = s.focus || focus;
+  const size = Math.max(1, s.zoom || zoom);
+  const photo = fullBleed
+    ? `<img class="cover-photo" src="/photo" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${x}% ${y}%;transform:scale(${size});transform-origin:${x}% ${y}%">`
+    : `<div style="position:absolute;inset:0;${ph(s, 0, zoom, focus)}"></div>`;
+  return `${photo}<div class="${fullBleed ? 'cover-scrim' : ''}" style="position:absolute;${fullBleed ? 'display:none;' : 'inset:0;'}background:linear-gradient(${angle}deg,rgba(${tint},${opacity}),rgba(${tint},0) ${span}%)"></div>`;
 }
 
 /* ======================= T01 dark editorial ======================= */
@@ -132,7 +136,7 @@ const T02 = {
   cover: (s, n) => `<div class="s" style="color:${s.photo ? '#F5F5F4' : '#2B2C30'}">${coverPhoto(s, 1.6, [0, 18], 90)}${T02.num(n, s.photo ? '#D6D0CA' : '#2B2C30')}
    <div class="fit" style="position:absolute;left:80px;top:${s.title_top || 150}px;width:${s.title_width || 620}px;bottom:${s.title_bottom || 420}px">
      <div class="h" style="font-size:${s.title_size || 90}px;color:${s.photo ? '#F5F5F4' : '#2B2C30'}">${md(s.title)}${s.title2 ? `<br><em style="color:${s.photo ? '#D6D0CA' : '#2B2C30'}">${md(s.title2)}</em>` : ''}</div></div>
-   ${s.label ? `<div class="p" style="position:absolute;left:80px;bottom:110px;width:500px;color:${s.photo ? '#E7E8EA' : '#2B2C30'}">${md(s.label)}</div>` : ''}<div class="arrow">→</div></div>`,
+   ${s.label ? `<div class="p cover-label" style="position:absolute;left:80px;bottom:110px;width:500px;color:${s.photo ? '#E7E8EA' : '#2B2C30'}">${md(s.label)}</div>` : ''}<div class="arrow">→</div></div>`,
   text: (s, n) => s.photo
     ? `<div class="s"><div style="position:absolute;right:0;top:0;bottom:0;width:440px;${ph(s, 0, 3.0, [60, 30])}"></div>${T02.num(n)}
        <div class="fit" style="position:absolute;left:80px;top:150px;width:520px;bottom:110px">${s.heading ? `<div class="h">${md(s.heading)}</div>` : ''}
@@ -214,7 +218,7 @@ const T03 = {
      ${s.intro ? `<div class="P" style="margin-top:30px">${md(s.intro)}</div>` : ''}<div style="margin:44px 40px 0">
      ${s.steps.map((x, i) => { const it = typeof x === 'string' ? { title: x } : x; return `<div class="step"><div class="n">${i + 1}</div><div><div class="t">${md(it.title)}</div>${it.text ? `<div class="x">${md(it.text)}</div>` : ''}</div></div>`; }).join('<div class="down">↓</div>')}</div>
      ${s.note ? `<div class="P" style="margin-top:40px;opacity:.85">${md(s.note)}</div>` : ''}</div></div>`,
-  cta: (s, n, light) => `<div class="s d">${coverPhoto(s, 1.45, [0, 24], 90, light)}${T03.top(n)}
+  cta: (s, n, light) => `<div class="s d">${coverPhoto(s, 1.45, [0, 24], 90, light, false)}${T03.top(n)}
    <div class="fit" style="position:absolute;left:70px;top:190px;width:${s.photo ? 640 : 940}px;bottom:90px">${s.heading ? `<div class="H" style="font-size:80px">${T03.hd(s.heading)}</div>` : ''}
      <div class="P" style="margin-top:44px">${md(s.body)}</div><div class="box" style="margin-top:50px;display:inline-block;font:800 30px 'Inter Tight';letter-spacing:.06em">@IRG_PSY</div></div></div>`,
 };
@@ -304,6 +308,30 @@ html,body{width:${W}px;height:${H}px;overflow:hidden}.s{position:relative;width:
         }
         return { zoom: z, ok: fits() };
       }, s.layout !== 'cover');
+      if (s.layout === 'cover' && s.photo) {
+        await page.evaluate(async () => {
+          await document.querySelector('.cover-photo').decode();
+          const scrim = document.querySelector('.cover-scrim');
+          const slide = document.querySelector('.s').getBoundingClientRect();
+          for (const block of document.querySelectorAll('.fit > div, .cover-label')) {
+            const bounds = block.getBoundingClientRect();
+            const layer = scrim.cloneNode();
+            const padding = 88;
+            const mask = 'transparent, black 72px, black calc(100% - 72px), transparent';
+            Object.assign(layer.style, {
+              display: 'block',
+              left: `${bounds.left - slide.left - padding}px`,
+              top: `${bounds.top - slide.top - padding}px`,
+              width: `${bounds.width + padding * 2}px`,
+              height: `${bounds.height + padding * 2}px`,
+              maskImage: `linear-gradient(90deg, ${mask}), linear-gradient(180deg, ${mask})`,
+              maskComposite: 'intersect',
+            });
+            scrim.before(layer);
+          }
+          scrim.remove();
+        });
+      }
       await page.waitForTimeout(150);
       const file = path.join(outDir, `slide_${String(i + 1).padStart(2, '0')}.png`);
       await page.screenshot({ path: file });

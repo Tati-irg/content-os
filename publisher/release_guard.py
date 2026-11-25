@@ -43,6 +43,8 @@ def readiness(manifest, version, asset_id=None):
     require(asset_id is None or asset == asset_id, 'asset_id mismatch')
     require(version == state['current_version'], 'requested version is not active')
     active = state['versions'][version]
+    require(active['status'] != 'revoked' and state['status'] != 'revoked',
+            'publication approval was revoked')
     require(active['status'] == 'current', 'version is not current')
     require(state['status'] == 'gate2_recorded', 'GATE 2 is missing or inactive')
     checked_file(root, state['input'])

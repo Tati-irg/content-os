@@ -82,7 +82,8 @@ def run(a):
             print(json.dumps({'asset_id': state['asset_id'],
                               'current_version': state['current_version'],
                               'status': state['status'],
-                              'gate2_current': bool(version and 'gate2' in version['results'])},
+                              'gate2_current': bool(version and version['status'] == 'current'
+                                                    and version['results'].get('gate2', {}).get('status') == 'current')},
                              ensure_ascii=False))
             return
         if a.command == 'record-gate1':
