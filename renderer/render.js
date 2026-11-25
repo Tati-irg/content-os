@@ -57,6 +57,15 @@ const ph = (s, box, zoom = 1, focus = [50, 30]) => s.photo
   ? `background:url('/photo') ${(s.focus || focus)[0]}% ${(s.focus || focus)[1]}%/${(s.zoom || zoom) * 100}% auto no-repeat;`
   : 'background:#8E9299;';
 
+// Keep the scrim on the text side and leave the rest of the photo unfiltered.
+function coverPhoto(s, zoom, focus, defaultAngle, light = false) {
+  if (!s.photo) return '';
+  const { angle = defaultAngle, opacity = .28, span = 55 } = s.photo_gradient || {};
+  const tint = light ? '245,245,244' : '43,44,48';
+  return `<div style="position:absolute;inset:0;${ph(s, 0, zoom, focus)}"></div>
+   <div style="position:absolute;inset:0;background:linear-gradient(${angle}deg,rgba(${tint},${opacity}),rgba(${tint},0) ${span}%)"></div>`;
+}
+
 /* ======================= T01 dark editorial ======================= */
 const T01 = {
   css: `
@@ -78,8 +87,7 @@ const T01 = {
 `,
   pills: c => `<div class="pills" style="color:${c}"><div class="pill">психолог · сексолог · гипнолог</div><div class="pill">@irg_psy</div></div>`,
   cnt: (n, c) => `<div class="count" style="color:${c}">${n} ⟶</div>`,
-  cover: (s, n) => `<div class="s"><div style="position:absolute;inset:0;${ph(s, 0, 1.1, [50, 0])}filter:grayscale(.35) brightness(.62) contrast(1.05)"></div>
-   <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,18,20,.15) 0%,rgba(18,18,20,0) 30%,rgba(18,18,20,.88) 70%,#121214 100%)"></div>${T01.pills('#F5F5F4')}
+  cover: (s, n) => `<div class="s">${coverPhoto(s, 1.1, [50, 0], 0)}${T01.pills('#F5F5F4')}
    <div class="fit" style="position:absolute;left:70px;right:70px;top:560px;bottom:150px;display:flex;flex-direction:column;justify-content:flex-end">
      <div class="h1">${md(s.title)}${s.title2 ? `<br><span class="m">${md(s.title2)}</span>` : ''}</div>
      ${s.label ? `<div><div class="label" style="margin-top:40px">${md(s.label)}</div></div>` : ''}</div>${T01.cnt(n, '#F5F5F4')}</div>`,
@@ -121,11 +129,10 @@ const T02 = {
 .arrow{position:absolute;right:70px;bottom:70px;width:84px;height:84px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font:300 40px Inter}
 `,
   num: (n, c) => `<div class="num"${c ? ` style="color:${c}"` : ''}>${n}</div>`,
-  cover: (s, n) => `<div class="s" style="color:#F5F5F4"><div style="position:absolute;inset:0;${ph(s, 0, 1.6, [0, 18])}"></div>
-   <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(43,44,48,.86) 0%,rgba(43,44,48,.55) 45%,rgba(43,44,48,0) 75%)"></div>${T02.num(n, '#D6D0CA')}
+  cover: (s, n) => `<div class="s" style="color:${s.photo ? '#F5F5F4' : '#2B2C30'}">${coverPhoto(s, 1.6, [0, 18], 90)}${T02.num(n, s.photo ? '#D6D0CA' : '#2B2C30')}
    <div class="fit" style="position:absolute;left:80px;top:${s.title_top || 150}px;width:${s.title_width || 620}px;bottom:${s.title_bottom || 420}px">
-     <div class="h" style="font-size:${s.title_size || 90}px;color:#F5F5F4">${md(s.title)}${s.title2 ? `<br><em style="color:#D6D0CA">${md(s.title2)}</em>` : ''}</div></div>
-   ${s.label ? `<div class="p" style="position:absolute;left:80px;bottom:110px;width:500px;color:#E7E8EA">${md(s.label)}</div>` : ''}<div class="arrow">→</div></div>`,
+     <div class="h" style="font-size:${s.title_size || 90}px;color:${s.photo ? '#F5F5F4' : '#2B2C30'}">${md(s.title)}${s.title2 ? `<br><em style="color:${s.photo ? '#D6D0CA' : '#2B2C30'}">${md(s.title2)}</em>` : ''}</div></div>
+   ${s.label ? `<div class="p" style="position:absolute;left:80px;bottom:110px;width:500px;color:${s.photo ? '#E7E8EA' : '#2B2C30'}">${md(s.label)}</div>` : ''}<div class="arrow">→</div></div>`,
   text: (s, n) => s.photo
     ? `<div class="s"><div style="position:absolute;right:0;top:0;bottom:0;width:440px;${ph(s, 0, 3.0, [60, 30])}"></div>${T02.num(n)}
        <div class="fit" style="position:absolute;left:80px;top:150px;width:520px;bottom:110px">${s.heading ? `<div class="h">${md(s.heading)}</div>` : ''}
@@ -176,12 +183,15 @@ const T03 = {
 .step .t{font:800 31px/1.2 'Inter Tight';text-transform:uppercase}.step .x{font:400 27px/1.3 'Inter Tight';opacity:.8;margin-top:6px}
 .down{text-align:center;font-size:30px;opacity:.6;margin:8px 0}
 .box{border:1.5px solid rgba(255,255,255,.35);border-radius:20px;padding:22px 28px;background:rgba(18,18,20,.4)}
+.light-t03 .s{background:#F5F5F4;color:#2B2C30}
+.light-t03 .top .c span,.light-t03 .hl,.light-t03 .step .n{color:#F5F5F4}
+.light-t03 .box,.light-t03 .step{background:#E7E8EA;border-color:var(--acc)}
+.light-t03 .d .P em{color:var(--acc)}
 `,
   top: n => `<div class="top"><span>Татьяна · психолог, сексолог, гипнолог</span><span class="ln"></span><span class="c"><span>${n}</span></span></div>`,
   // title supports [[highlight]] for the accent bar
   hd: t => md(t).replace(/\[\[(.+?)\]\]/g, '<span class="hl">$1</span>'),
-  cover: (s, n) => `<div class="s d"><div style="position:absolute;inset:0;${ph(s, 0, 1.45, [0, 24])}filter:brightness(${s.bright || .8})"></div>
-   <div style="position:absolute;inset:0;background:${s.shade === 'corner' ? 'linear-gradient(140deg,#121214 0%,rgba(18,18,20,.9) 22%,rgba(18,18,20,.55) 38%,rgba(18,18,20,.15) 52%,rgba(18,18,20,0) 62%)' : s.shade === 'top' ? 'linear-gradient(180deg,#121214 0%,rgba(18,18,20,.85) 35%,rgba(18,18,20,.2) 62%,rgba(18,18,20,0) 75%)' : 'linear-gradient(90deg,#121214 0%,rgba(18,18,20,.92) 38%,rgba(18,18,20,.35) 62%,rgba(18,18,20,0) 80%)'}"></div>${T03.top(n)}
+  cover: (s, n, light) => `<div class="s d">${coverPhoto(s, 1.45, [0, 24], s.shade === 'corner' ? 140 : s.shade === 'top' ? 180 : 90, light)}${T03.top(n)}
    <div class="fit" style="position:absolute;left:70px;top:${s.title_top || 190}px;width:870px;bottom:90px">
      <div class="H">${T03.hd(s.title)}</div>${s.title2 ? `<div class="H2" style="margin-top:22px;width:560px">${md(s.title2)}</div>` : ''}
      ${s.label ? `<div style="width:380px;height:2px;background:rgba(255,255,255,.3);margin:50px 0 36px"></div><div class="box" style="width:440px">
@@ -204,7 +214,7 @@ const T03 = {
      ${s.intro ? `<div class="P" style="margin-top:30px">${md(s.intro)}</div>` : ''}<div style="margin:44px 40px 0">
      ${s.steps.map((x, i) => { const it = typeof x === 'string' ? { title: x } : x; return `<div class="step"><div class="n">${i + 1}</div><div><div class="t">${md(it.title)}</div>${it.text ? `<div class="x">${md(it.text)}</div>` : ''}</div></div>`; }).join('<div class="down">↓</div>')}</div>
      ${s.note ? `<div class="P" style="margin-top:40px;opacity:.85">${md(s.note)}</div>` : ''}</div></div>`,
-  cta: (s, n) => `<div class="s d">${s.photo ? `<div style="position:absolute;inset:0;${ph(s, 0, 1.45, [0, 24])}filter:brightness(.7)"></div><div style="position:absolute;inset:0;background:linear-gradient(90deg,#121214 0%,rgba(18,18,20,.9) 45%,rgba(18,18,20,.2) 80%)"></div>` : ''}${T03.top(n)}
+  cta: (s, n, light) => `<div class="s d">${coverPhoto(s, 1.45, [0, 24], 90, light)}${T03.top(n)}
    <div class="fit" style="position:absolute;left:70px;top:190px;width:${s.photo ? 640 : 940}px;bottom:90px">${s.heading ? `<div class="H" style="font-size:80px">${T03.hd(s.heading)}</div>` : ''}
      <div class="P" style="margin-top:44px">${md(s.body)}</div><div class="box" style="margin-top:50px;display:inline-block;font:800 30px 'Inter Tight';letter-spacing:.06em">@IRG_PSY</div></div></div>`,
 };
@@ -214,6 +224,9 @@ const TEMPLATES = { T01, T02, T03 };
 function validate(spec) {
   const errs = [];
   if (!TEMPLATES[spec.template]) errs.push(`TEMPLATE ID "${spec.template}" not allowed (T01/T02/T03 only)`);
+  if (spec.appearance !== undefined && (spec.appearance !== 'light' || spec.template !== 'T03')) {
+    errs.push('appearance must be light and is supported only by T03');
+  }
   if (spec.accent && !ACCENTS[spec.accent]) errs.push(`accent "${spec.accent}" not in palette (${Object.keys(ACCENTS).join('/')})`);
   if (!Array.isArray(spec.slides) || !spec.slides.length) errs.push('no slides');
   (spec.slides || []).forEach((s, i) => {
@@ -225,6 +238,17 @@ function validate(spec) {
     if (s.layout === 'list' && !(s.items && s.items.length)) errs.push(`${at}: list needs items`);
     if (s.layout === 'steps' && !(s.steps && s.steps.length)) errs.push(`${at}: steps needs steps`);
     if (s.layout === 'quote' && !s.quote) errs.push(`${at}: quote needs quote`);
+    if (s.photo_gradient !== undefined) {
+      const g = s.photo_gradient;
+      const inRange = (value, min, max) => value === undefined ||
+        (Number.isFinite(value) && value >= min && value <= max);
+      if (!s.photo || !['cover', 'cta'].includes(s.layout) ||
+          (s.layout === 'cta' && spec.template !== 'T03') ||
+          !g || typeof g !== 'object' || Array.isArray(g) ||
+          !inRange(g.angle, 0, 360) || !inRange(g.opacity, .05, .40) || !inRange(g.span, 10, 65)) {
+        errs.push(`${at}: photo_gradient requires a photo cover or T03 photo CTA, angle 0–360, opacity .05–.40, span 10–65`);
+      }
+    }
     if (s.photo) try { photoFile(s.photo, spec.photo_dir || PHOTO_DIR); } catch (e) { errs.push(`${at}: ${e.message}`); }
   });
   return errs;
@@ -242,8 +266,9 @@ async function render(spec, outDir) {
     for (let i = 0; i < N; i++) {
       const s = spec.slides[i];
       const n = spec.template === 'T02' ? `${String(i + 1).padStart(2, '0')}/${String(N).padStart(2, '0')}` : `${i + 1}/${N}`;
+      const light = spec.template === 'T03' && (spec.appearance === 'light' || (s.layout === 'cover' && !s.photo));
       const html = `<!doctype html><html><head><meta charset="utf-8">${FONTS}<style>:root{--acc:${acc}}*{box-sizing:border-box;margin:0;padding:0}
-html,body{width:${W}px;height:${H}px;overflow:hidden}.s{position:relative;width:${W}px;height:${H}px;overflow:hidden}${T.css}${N === 1 ? '.arrow,.num,.count,.top .c{display:none}' : ''}</style></head><body>${T[s.layout](s, n)}</body></html>`;
+html,body{width:${W}px;height:${H}px;overflow:hidden}.s{position:relative;width:${W}px;height:${H}px;overflow:hidden}${T.css}${N === 1 ? '.arrow,.num,.count,.top .c{display:none}' : ''}</style></head><body class="${light ? 'light-t03' : ''}">${T[s.layout](s, n, light)}</body></html>`;
       const assets = new Map();
       if (s.photo) assets.set('/photo', photoFile(s.photo, spec.photo_dir || PHOTO_DIR));
       await load(html, assets);
@@ -285,7 +310,7 @@ html,body{width:${W}px;height:${H}px;overflow:hidden}.s{position:relative;width:
       report.push({ slide: i + 1, layout: s.layout, file: path.basename(file), text_scale: fit.zoom, fits: fit.ok });
     }
   });
-  fs.writeFileSync(path.join(outDir, 'render_report.json'), JSON.stringify({ template: spec.template, accent: spec.accent || null, slides: report }, null, 2));
+  fs.writeFileSync(path.join(outDir, 'render_report.json'), JSON.stringify({ template: spec.template, accent: spec.accent || null, ...(spec.appearance ? { appearance: spec.appearance } : {}), slides: report }, null, 2));
   return report;
 }
 
