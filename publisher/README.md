@@ -5,7 +5,7 @@
 ```
 python3 publisher/publish.py SLOT.json                                   # dry run (по умолчанию)
 python3 publisher/publish.py SLOT.json --only ig,threads                      # только часть площадок
-python3 publisher/publish.py SLOT.json --publish --approval APPROVED.json  # настоящая публикация
+python3 publisher/publish.py --check-ready --manifest MANIFEST.json --version v2
 ```
 
 ## Маршрут VK
@@ -14,15 +14,12 @@ Om repost автоматически переносит публикации и�
 пропускает прямую отправку в VK, даже если в старом слоте есть ключ `vk`, чтобы избежать дублей.
 Прямой режим доступен при явном выборе `--only vk` для отдельных задач вне автопереноса.
 
-## Правило: dry run / publish
+## Локальная проверка и выпуск
 
-- **Без `--publish` ничего не публикуется.** Скрипт проверяет файлы и лимиты, создаёт
-  контейнеры Instagram/Threads и ждёт статуса `FINISHED` (они невидимы, пока не вызван
-  `media_publish` / `threads_publish`) и собирает запросы Telegram без отправки. При явном выборе VK
-  возможна приватная загрузка фото/PDF. Скрипт печатает JSON-отчёт по площадкам.
-- **`--publish` требует файл одобрения GATE 2** (`{"asset_id": ..., "approved_by": ..., "approved_at": ...}`),
-  `asset_id` должен совпадать со слотом. Если хоть одна площадка не прошла проверку — не
-  публикуется ничего.
+- `python3 publisher/publish.py --check-ready --manifest /private/pilot/manifest.json --version v2` проверяет активный пакет без сети и слота. Та же команда доступна для `publish_carousel.py`.
+- Dry run обоих публикаторов проверяет локальные входы. Он не загружает файлы и не создаёт контейнеры.
+- Для реального запуска оба публикатора требуют `--publish --manifest … --version … --release …`. Манифест содержит `gate1_evidence` с путём и SHA-256 записи GATE 1. Запись связывает `decision: approved`, `approved_by`, `asset_id`, `cycle_id`, `gate1_id`, `input_sha256` и хеш исходного подтверждения в поле `source`. GATE 2 должен быть актуальным и связанным с SHA-256 пакета.
+- JSON отдельного разрешения содержит `action: publish`, `asset_id`, `version`, `package_sha256`, `authorized_by`, `authorized_at`, `publisher` (имя скрипта), `platforms` (отсортированный список) и `inputs`. Для `publish.py` это объект с ключом `slot` и относительным путём в пакете. Для `publish_carousel.py` это `caption` и упорядоченный список `slides`. Все файлы должны быть перечислены в утверждённом пакете. Храни подтверждения в закрытом каталоге координатора. Это локальные доверенные записи, доступ на запись к ним должен быть ограничен.
 - Стандартный порядок публикации — ig → fb → threads → tg → max. Ошибка на одной площадке не останавливает остальные.
 - Facebook и Instagram берут `META_PAGE_TOKEN` из окружения. В Codex Cloud прокси заменяет заполнитель HTTP-секрета для разрешённых доменов Meta. Threads передаёт `THREADS_ACCESS_TOKEN` в заголовке Bearer для прокси. VK использует авторизацию прокси. Telegram берёт `TELEGRAM_BOT_TOKEN` из окружения.
   Токены нигде не печатаются.
@@ -36,8 +33,7 @@ Om repost автоматически переносит публикации и�
 `origin` с настроенным Git-репозиторием.
 
 Для загрузки нужны права на push, а для получения файлов площадками — публичный доступ по Raw.
-Обычный dry run с медиа тоже может выгрузить файлы и создать контейнеры. Для локальной проверки
-адресов используй функции `require_media_origin` и `media_url` без запуска публикаторов.
+Для локальной проверки адресов можно использовать `require_media_origin` и `media_url`.
 
 ## SLOT.json
 

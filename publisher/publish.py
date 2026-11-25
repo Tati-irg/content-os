@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
 """Publish one post (a "slot") to the selected platforms.
 
-usage: publish.py SLOT_JSON [--publish --approval APPROVED.json] [--only ig,tg,threads]
+Usage: publish.py SLOT.json [--only ig,tg,threads]
+Readiness: publish.py --check-ready --manifest MANIFEST.json --version VERSION
 
-Without --publish this is a DRY RUN: everything is validated, Instagram/Threads containers are
-created and waited on (they stay invisible until media_publish/threads_publish, which is not
-called), and Telegram requests are built but not sent. A JSON report per platform is printed.
-VK receives Instagram posts via Om repost. Direct VK requires explicit selection with
---only vk and can upload photos or documents privately during a dry run.
-
---publish needs a GATE 2 approval JSON whose asset_id matches the slot. Platforms then go out
-in the order ig, fb, threads, tg, max by default; direct VK, if selected, runs
-before Telegram. A failure on one platform does not stop the others.
+The default dry run validates locally. Publishing requires active GATE 1 and GATE 2
+evidence, a verified package and separate --release authorization. The default
+route is ig, fb, threads, tg, max. Direct VK requires explicit selection.
 
 Auth: Facebook and Instagram use META_PAGE_TOKEN from the environment.
 Threads sends THREADS_ACCESS_TOKEN as a Bearer header for the proxy.
@@ -28,6 +23,7 @@ from PIL import Image
 
 from media_hosting import MEDIA_BRANCH, MEDIA_PUSH_REF, media_url, require_media_origin
 from meta_auth import meta_headers
+import release_guard
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -846,26 +842,52 @@ def redact(msg):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('slot')
-    ap.add_argument('--publish', action='store_true', help='actually post (needs --approval)')
-    ap.add_argument('--approval', help='GATE 2 approval JSON: {"asset_id":..., "approved_by":..., "approved_at":...}')
+    ap.add_argument('slot', nargs='?')
+    ap.add_argument('--publish', action='store_true', help='publish with coordinator approvals and release authorization')
     ap.add_argument('--only', help='comma-separated platforms: ig,fb,threads,vk,tg,max '
                                    '(direct VK requires explicit selection)')
+    release_guard.add_options(ap)
     a = ap.parse_args()
+    if a.check_ready and a.publish:
+        ap.error('--check-ready and --publish are mutually exclusive')
+    try:
+        with tempfile.TemporaryDirectory(prefix='content-os-release-') as directory:
+            return run_cli(a, Path(directory))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as e:
+        sys.exit(f'BLOCKED: {redact(str(e))}')
 
-    s = load_slot(a.slot)
-    if not s['asset_id'] or s['kind'] not in KINDS:
-        sys.exit(f'slot needs asset_id and kind in {sorted(KINDS)}')
+
+def run_cli(a, directory):
+    if a.check_ready:
+        asset = load_slot(a.slot)['asset_id'] if a.slot else None
+        release_guard.print_ready(release_guard.check_args(a, asset))
+        return
+    if not a.slot:
+        raise ValueError('a slot is required')
     only = set(a.only.split(',')) if a.only else DEFAULT_PLATFORMS
     if only - set(ORDER):
-        sys.exit(f'--only accepts {",".join(ORDER)}')
+        raise ValueError(f'--only accepts {",".join(ORDER)}')
     if a.publish:
-        try:
-            ok = json.loads(Path(a.approval).read_text(encoding='utf-8')).get('asset_id') == s['asset_id']
-        except (TypeError, OSError, ValueError, AttributeError):
-            ok = False
-        if not ok:
-            sys.exit('BLOCKED: no GATE 2 approval for this asset, nothing was published')
+        bundle = release_guard.check_args(a)
+        release_guard.require(a.release, 'separate --release authorization is required')
+        slot = release_guard.approved_input(bundle, Path(a.slot))
+        release_guard.snapshot(bundle, directory)
+        s = load_slot(directory / slot)
+        release_guard.require(s['asset_id'] == bundle['asset_id'], 'asset_id mismatch')
+        for key in ('image', 'video', 'cover', 'document', 'slides_dir'):
+            path = s[key]
+            if path is not None:
+                release_guard.require(path.resolve().is_relative_to(directory),
+                                      'slot media must come from the approved snapshot')
+        for cfg in s['platforms'].values():
+            for key in ('caption_file', 'text_file', 'first_comment_file'):
+                if cfg.get(key):
+                    release_guard.require(cfg[key].resolve().is_relative_to(directory),
+                                          'slot text must come from the approved snapshot')
+    else:
+        s = load_slot(a.slot)
+    if not s['asset_id'] or s['kind'] not in KINDS:
+        raise ValueError(f'slot needs asset_id and kind in {sorted(KINDS)}')
 
     report = {'asset_id': s['asset_id'], 'kind': s['kind'], 'mode': 'publish' if a.publish else 'dry_run',
               'platforms': {}}
@@ -895,6 +917,16 @@ def main():
         report['blocked'] = f'validation failed for {",".join(invalid)}; nothing was published'
         print(json.dumps(report, ensure_ascii=False, indent=2))
         sys.exit(1)
+
+    if not a.publish:
+        for k, plan in plans.items():
+            result = run_tg(plan, False) if k == 'tg' else {'kind': plan['kind']}
+            report['platforms'][k] = {**result, 'status': 'dry_run_ok'}
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        sys.exit(1 if invalid else 0)
+    release_guard.require(plans, 'no applicable platforms selected')
+    release_guard.still_current(a, bundle)
+    release_guard.authorize(bundle, a.release, 'publish.py', plans, {'slot': slot})
 
     urls, host_err = {}, None
     need = hosting_needs(plans)

@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 """Publish a rendered carousel to Instagram (@irg_psy) via the Graph API.
 
-Steps: PNG slides -> JPEG -> pushed to the public repo (raw.githubusercontent.com is the
-image host Instagram pulls from) -> carousel item containers -> carousel container.
-Without --publish it stops there (a dry run: Instagram checks every image, nothing is posted).
---publish needs an approval file written at GATE 2, so nothing goes out without Тата's ok.
+Without --publish slide and caption validation is local.
+Publishing requires active GATE 1 and GATE 2 evidence, a verified package,
+and separate --release authorization.
 
-The Graph API token is injected by the network proxy; it is never passed here.
-
-usage: publish_carousel.py SLIDES_DIR --id ASSET_ID --caption CAPTION.txt [--publish --approval APPROVED.json]
+Usage: publish_carousel.py SLIDES_DIR --id ASSET_ID --caption CAPTION.txt
+Readiness: publish_carousel.py --check-ready --manifest MANIFEST.json --version VERSION
 """
-import argparse, json, os, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
+import argparse, json, os, subprocess, sys, tempfile, time, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 from PIL import Image
 
 from media_hosting import MEDIA_PUSH_REF, media_url, require_media_origin
 from meta_auth import meta_headers
+import release_guard
 
 GRAPH = 'https://graph.facebook.com/v21.0'
 IG_USER = '17841402153358869'  # @irg_psy
@@ -88,22 +87,52 @@ def host_images(slides_dir, asset_id):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('slides_dir')
-    ap.add_argument('--id', required=True, help='CONTENT ASSET ID, used as the media folder name')
-    ap.add_argument('--caption', required=True, help='text file with the post caption')
-    ap.add_argument('--publish', action='store_true', help='actually post (needs --approval)')
-    ap.add_argument('--approval', help='GATE 2 approval JSON: {"asset_id":..., "approved_by":..., "approved_at":...}')
+    ap.add_argument('slides_dir', nargs='?')
+    ap.add_argument('--id', help='CONTENT ASSET ID, used as the media folder name')
+    ap.add_argument('--caption', help='text file with the post caption')
+    ap.add_argument('--publish', action='store_true', help='publish with coordinator approvals and release authorization')
+    release_guard.add_options(ap)
     a = ap.parse_args()
+    if a.check_ready and a.publish:
+        ap.error('--check-ready and --publish are mutually exclusive')
+    try:
+        with tempfile.TemporaryDirectory(prefix='content-os-release-') as directory:
+            return run_cli(a, Path(directory))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as e:
+        sys.exit(f'BLOCKED: {e}')
 
-    caption = Path(a.caption).read_text(encoding='utf-8').strip()
-    if len(caption) > 2200:
-        sys.exit(f'caption is {len(caption)} chars, Instagram limit is 2200')
+
+def run_cli(a, directory):
+    if a.check_ready:
+        release_guard.print_ready(release_guard.check_args(a, a.id))
+        return
+    release_guard.require(a.id and a.caption and a.slides_dir, 'slides_dir, --id and --caption are required')
+    slides = Path(a.slides_dir).resolve()
+    caption_file = Path(a.caption).resolve()
     if a.publish:
-        ok = a.approval and Path(a.approval).exists() and json.loads(Path(a.approval).read_text()).get('asset_id') == a.id
-        if not ok:
-            sys.exit('BLOCKED: no GATE 2 approval for this asset, nothing was published')
-
-    urls = host_images(a.slides_dir, a.id)
+        bundle = release_guard.check_args(a, a.id)
+        release_guard.require(a.release, 'separate --release authorization is required')
+        caption_name = release_guard.approved_input(bundle, caption_file)
+        pngs = sorted(slides.glob('slide_*.png'))
+        release_guard.require(2 <= len(pngs) <= 10, 'Instagram carousel needs 2–10 slides')
+        names = [release_guard.approved_input(bundle, p) for p in pngs]
+        release_guard.snapshot(bundle, directory)
+        slides = directory / Path(names[0]).parent
+        release_guard.require(sorted(p.relative_to(directory).as_posix()
+                                     for p in slides.glob('slide_*.png')) == names,
+                              'slide list does not match the approved snapshot')
+        caption_file = directory / caption_name
+    caption = caption_file.read_text(encoding='utf-8').strip()
+    release_guard.require(len(caption) <= 2200, 'Instagram caption exceeds 2200 characters')
+    if not a.publish:
+        count = len(list(slides.glob('slide_*.png')))
+        release_guard.require(2 <= count <= 10, 'Instagram carousel needs 2–10 slides')
+        print(json.dumps({'asset_id': a.id, 'slides': count, 'mode': 'dry_run', 'published': False}))
+        return
+    release_guard.still_current(a, bundle)
+    release_guard.authorize(bundle, a.release, 'publish_carousel.py', ['ig'],
+                                {'caption': caption_name, 'slides': names})
+    urls = host_images(slides, a.id)
     children = []
     for u in urls:
         c = api('POST', f'{IG_USER}/media', image_url=u, is_carousel_item='true')['id']
