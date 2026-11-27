@@ -1,0 +1,17 @@
+{
+  "runs": [
+    {
+      "run_at": "2026-11-27T23:48:05.038170+00:00",
+      "results": [
+        {
+          "slot": "test-connectivity-001",
+          "networks": {
+            "tg": "OK message_id=912",
+            "max": "OK mid=mid.ffffbf717fe2958f01a21f68b8886b4b"
+          },
+          "status": "DONE"
+        }
+      ]
+    }
+  ]
+}
