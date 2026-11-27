@@ -1,0 +1,20 @@
+name: Meta diag
+on:
+  workflow_dispatch: {}
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверка токена Meta
+        env:
+          META_USER_ACCESS_TOKEN: ${{ secrets.META_USER_ACCESS_TOKEN }}
+        run: |
+          tok="$META_USER_ACCESS_TOKEN"
+          if [ -z "$tok" ]; then echo "META_USER_ACCESS_TOKEN: ПУСТО (имя не совпало)"; exit 0; fi
+          echo "токен найден, длина ${#tok}"
+          echo "--- /me:"
+          curl -s "https://graph.facebook.com/v21.0/me?access_token=$tok"
+          echo
+          echo "--- страница 131906467328515:"
+          curl -s "https://graph.facebook.com/v21.0/131906467328515?fields=name,instagram_business_account&access_token=$tok"
+          echo
