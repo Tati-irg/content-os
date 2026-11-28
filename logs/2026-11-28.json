@@ -36,6 +36,18 @@
           "status": "DONE"
         }
       ]
+    },
+    {
+      "run_at": "2026-11-28T00:42:23.244682+00:00",
+      "results": [
+        {
+          "slot": "test-ig-004",
+          "networks": {
+            "ig": "OK media_id=18119400251119633"
+          },
+          "status": "DONE"
+        }
+      ]
     }
   ]
 }
