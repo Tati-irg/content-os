@@ -107,6 +107,10 @@ def _warm_url(url, tries=12, pause=15):
 def pub_ig(text, media):
     tok, ig = env("META_PAGE_TOKEN"), env("IG_USER_ID")
     if not tok or not ig: return "SKIP: нет ключей"
+    def rel(p):
+        s = str(p); i = s.find("queue/")
+        return s[i:] if i >= 0 else s
+    media = [rel(p) for p in media]
     for p in media:
         if not _warm_url(raw_url(p)): raise RuntimeError(f"картинка не появилась в raw-кэше: {p}")
     g = "https://graph.facebook.com/v21.0"
