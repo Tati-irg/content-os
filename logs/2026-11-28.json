@@ -1,0 +1,17 @@
+{
+  "runs": [
+    {
+      "run_at": "2026-11-28T00:28:55.644151+00:00",
+      "results": [
+        {
+          "slot": "test-ig-fb-001",
+          "networks": {
+            "ig": "ERROR: HTTP Error 400: Bad Request",
+            "fb": "OK post_id=131906467328515_1774408321361138"
+          },
+          "status": "DONE"
+        }
+      ]
+    }
+  ]
+}
