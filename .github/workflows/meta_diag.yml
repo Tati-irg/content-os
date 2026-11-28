@@ -5,16 +5,12 @@ jobs:
   diag:
     runs-on: ubuntu-latest
     steps:
-      - name: Проверка токена Meta
+      - name: Проверка нового META_PAGE_TOKEN
         env:
-          META_USER_ACCESS_TOKEN: ${{ secrets.META_USER_ACCESS_TOKEN }}
+          TOK: ${{ secrets.META_PAGE_TOKEN }}
         run: |
-          tok="$META_USER_ACCESS_TOKEN"
-          if [ -z "$tok" ]; then echo "META_USER_ACCESS_TOKEN: ПУСТО (имя не совпало)"; exit 0; fi
-          echo "токен найден, длина ${#tok}"
-          echo "--- /me:"
-          curl -s "https://graph.facebook.com/v21.0/me?access_token=$tok"
-          echo
-          echo "--- страница 131906467328515:"
-          curl -s "https://graph.facebook.com/v21.0/131906467328515?fields=name,instagram_business_account&access_token=$tok"
+          if [ -z "$TOK" ]; then echo "META_PAGE_TOKEN: ПУСТО"; exit 0; fi
+          echo "токен найден, длина ${#TOK}"
+          echo "--- страница:"
+          curl -s "https://graph.facebook.com/v21.0/131906467328515?fields=name,instagram_business_account&access_token=$TOK"
           echo
