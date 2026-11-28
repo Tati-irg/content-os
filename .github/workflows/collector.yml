@@ -1,8 +1,8 @@
 name: Content OS Inbox Collector
 on:
   schedule:
-    # приёмник материалов от Таты: каждые 15 минут
-    - cron: "*/15 * * * *"
+    # приёмник материалов от Таты: каждые 5 минут
+    - cron: "*/5 * * * *"
   workflow_dispatch: {}  # ручной запуск из вкладки Actions
 
 permissions:
