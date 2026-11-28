@@ -12,6 +12,18 @@
           "status": "DONE"
         }
       ]
+    },
+    {
+      "run_at": "2026-11-28T00:32:35.331167+00:00",
+      "results": [
+        {
+          "slot": "test-ig-002",
+          "networks": {
+            "ig": "ERROR: картинка не появилась в raw-кэше: /home/runner/work/content-os/content-os/queue/test-ig-002/1.jpg"
+          },
+          "status": "DONE"
+        }
+      ]
     }
   ]
 }
