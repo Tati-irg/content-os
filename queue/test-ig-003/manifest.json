@@ -1,0 +1,14 @@
+{
+  "slot_id": "test-ig-003",
+  "publish_at": "2026-11-28T00:00:00+03:00",
+  "approved": true,
+  "gate2": "G2-TEST-IGFB-2026-11-28-TANYA",
+  "networks": {
+    "ig": {
+      "text": "🔧 Техническая проверка связи. Робот Content OS учится публиковать. Пост скоро удалим.",
+      "media": [
+        "1.jpg"
+      ]
+    }
+  }
+}
