@@ -5,12 +5,12 @@ jobs:
   diag:
     runs-on: ubuntu-latest
     steps:
-      - name: Проверка нового META_PAGE_TOKEN
+      - name: Почему IG 400
         env:
           TOK: ${{ secrets.META_PAGE_TOKEN }}
         run: |
-          if [ -z "$TOK" ]; then echo "META_PAGE_TOKEN: ПУСТО"; exit 0; fi
-          echo "токен найден, длина ${#TOK}"
-          echo "--- страница:"
-          curl -s "https://graph.facebook.com/v21.0/131906467328515?fields=name,instagram_business_account&access_token=$TOK"
+          echo "--- файл доступен?"
+          curl -s -o /dev/null -w "%{http_code} %{content_type} %{size_download}b\n" "https://raw.githubusercontent.com/Tati-irg/content-os/main/logs/done/test-ig-fb-001/1.jpg"
+          echo "--- создаём контейнер:"
+          curl -s -X POST "https://graph.facebook.com/v21.0/17841402153358869/media"             -d "image_url=https://raw.githubusercontent.com/Tati-irg/content-os/main/logs/done/test-ig-fb-001/1.jpg"             -d "caption=diag" -d "access_token=$TOK"
           echo
