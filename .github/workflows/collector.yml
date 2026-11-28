@@ -1,0 +1,29 @@
+name: Content OS Inbox Collector
+on:
+  schedule:
+    # приёмник материалов от Таты: каждые 15 минут
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}  # ручной запуск из вкладки Actions
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Забрать сообщения из TG-бота в inbox/
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        run: python publisher_gh/collect.py
+      - name: Сохранить inbox и состояние
+        run: |
+          git config user.name "content-os-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add inbox state
+          git diff --cached --quiet || git commit -m "inbox collect $(date -u +'%F %H:%M')"
+          git push
