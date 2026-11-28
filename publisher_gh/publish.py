@@ -139,8 +139,18 @@ def pub_ig(text, media):
     else:
         cont = post(f"/{ig}/media", image_url=raw_url(media[0]), caption=text)
     wait(cont["id"])
-    r = post(f"/{ig}/media_publish", creation_id=cont["id"])
-    return f"OK media_id={r.get('id')}"
+    time.sleep(15)  # инсте нужно «дойти» после FINISHED
+    last = None
+    for attempt in range(6):
+        try:
+            r = post(f"/{ig}/media_publish", creation_id=cont["id"])
+            return f"OK media_id={r.get('id')}"
+        except RuntimeError as e:
+            last = e
+            if "2207027" in str(e) or "not available" in str(e).lower():
+                time.sleep(20); continue
+            raise
+    raise RuntimeError(f"не опубликовалось после ожидания: {last}")
 
 def pub_fb(text, media):
     tok, page = env("META_PAGE_TOKEN"), env("FB_PAGE_ID")
