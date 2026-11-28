@@ -5,6 +5,9 @@ Content OS Autopublisher — робот публикации из очереди
 Запускается GitHub Actions по расписанию (15:00 МСК) или вручную.
 Берёт манифесты, чьё publish_at <= сейчас, и постит во все сети, для которых есть ключи.
 Ничего не постит без "approved": true и "gate2" в манифесте.
+v2: видео (Reels в IG, видеопост в FB, sendVideo в TG, video-attachment в MAX);
+    после УСПЕШНОЙ публикации видео-исходники стираются из репозитория (D-49),
+    чтобы не копился мусор. Картинки и манифест остаются в logs/done/.
 """
 import json, os, sys, time, urllib.request, urllib.parse, mimetypes, uuid
 from pathlib import Path
@@ -15,12 +18,22 @@ QUEUE = ROOT / "queue"
 LOGS = ROOT / "logs"
 LOGS.mkdir(exist_ok=True)
 
+VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm", ".3gp"}
+
+def is_video(p):
+    return Path(str(p)).suffix.lower() in VIDEO_EXT
+
 def env(n): return (os.environ.get(n) or "").strip()
+
+def rel(p):
+    """Из локального пути достаём путь относительно корня репо (queue/...)."""
+    s = str(p); i = s.find("queue/")
+    return s[i:] if i >= 0 else s
 
 def http_json(url, data=None, headers=None, method=None, raw=False):
     req = urllib.request.Request(url, data=data, method=method)
     for k, v in (headers or {}).items(): req.add_header(k, v)
-    with urllib.request.urlopen(req, timeout=60) as r:
+    with urllib.request.urlopen(req, timeout=120) as r:
         body = r.read()
         return body if raw else json.loads(body.decode("utf-8"))
 
@@ -40,8 +53,20 @@ def http_post_form(url, fields, files=None, headers=None):
 
 RAW_BASE = None  # выставляется в main из env GITHUB_REPOSITORY
 
-def raw_url(rel):
-    return f"https://raw.githubusercontent.com/{RAW_BASE}/main/{rel}"
+def raw_url(relpath):
+    return f"https://raw.githubusercontent.com/{RAW_BASE}/main/{relpath}"
+
+def _warm_url(url, tries=12, pause=15):
+    """Ждём, пока raw-кэш GitHub увидит свежий файл (иначе Meta получит 404)."""
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(url, method="HEAD")
+            with urllib.request.urlopen(req, timeout=30) as r:
+                if r.status == 200: return True
+        except Exception:
+            pass
+        time.sleep(pause)
+    return False
 
 # ---------- Сети ----------
 
@@ -52,6 +77,8 @@ def pub_tg(text, media):
     if not media:
         r = http_json(api + "/sendMessage", data=json.dumps({"chat_id": chat, "text": text}).encode(),
                       headers={"Content-Type": "application/json"}, method="POST")
+    elif len(media) == 1 and is_video(media[0]):  # боты TG: видео до 50 МБ
+        r = http_post_form(api + "/sendVideo", {"chat_id": chat, "caption": text}, {"video": media[0]})
     elif len(media) == 1:
         r = http_post_form(api + "/sendPhoto", {"chat_id": chat, "caption": text}, {"photo": media[0]})
     else:
@@ -68,7 +95,8 @@ def pub_max(text, media):
     if not tok or not chat: return "SKIP: нет ключей"
     body = {"text": text[:4000]}
     if media:  # upload-хост MAX из Actions обычно доступен, но надёжнее публичная ссылка
-        body["attachments"] = [{"type": "image", "payload": {"url": raw_url(media[0])}}]
+        mtype = "video" if is_video(media[0]) else "image"
+        body["attachments"] = [{"type": mtype, "payload": {"url": raw_url(rel(media[0]))}}]
     r = http_json(f"https://platform-api.max.ru/messages?chat_id={chat}",
                   data=json.dumps(body).encode(),
                   headers={"Authorization": tok, "Content-Type": "application/json"}, method="POST")
@@ -76,7 +104,7 @@ def pub_max(text, media):
 
 def pub_vk(text, media):
     tok, gid = env("VK_TOKEN"), env("VK_GROUP_ID")
-    if not tok or not gid: return "SKIP: нет ключей"
+    if not tok or not gid: return "SKIP: нет ключей (VK идёт репостом из IG через om-repost)"
     def call(method, **params):
         params.update({"access_token": tok, "v": "5.199"})
         r = http_json(f"https://api.vk.com/method/{method}", data=urllib.parse.urlencode(params).encode(), method="POST")
@@ -91,28 +119,12 @@ def pub_vk(text, media):
     r = call("wall.post", owner_id=f"-{gid}", from_group=1, message=text, attachments=",".join(attachments))
     return f"OK post_id={r.get('post_id')}"
 
-def _warm_url(url, tries=12, pause=15):
-    """Ждём, пока raw-кэш GitHub увидит свежий файл (иначе Meta получит 404)."""
-    import urllib.error
-    for i in range(tries):
-        try:
-            req = urllib.request.Request(url, method="HEAD")
-            with urllib.request.urlopen(req, timeout=30) as r:
-                if r.status == 200: return True
-        except Exception:
-            pass
-        time.sleep(pause)
-    return False
-
 def pub_ig(text, media):
     tok, ig = env("META_PAGE_TOKEN"), env("IG_USER_ID")
     if not tok or not ig: return "SKIP: нет ключей"
-    def rel(p):
-        s = str(p); i = s.find("queue/")
-        return s[i:] if i >= 0 else s
     media = [rel(p) for p in media]
     for p in media:
-        if not _warm_url(raw_url(p)): raise RuntimeError(f"картинка не появилась в raw-кэше: {p}")
+        if not _warm_url(raw_url(p)): raise RuntimeError(f"файл не появился в raw-кэше: {p}")
     g = "https://graph.facebook.com/v21.0"
     def post(url, **params):
         import urllib.error
@@ -124,21 +136,27 @@ def pub_ig(text, media):
             raise RuntimeError(f"IG HTTP {e.code}: {body}")
         if "error" in r: raise RuntimeError(f"IG: {r['error'].get('message')}")
         return r
-    def wait(cid):
-        for _ in range(20):
+    def wait(cid, tries=20):
+        for _ in range(tries):
             s = http_json(f"{g}/{cid}?fields=status_code&access_token={tok}")
             if s.get("status_code") == "FINISHED": return
             if s.get("status_code") == "ERROR": raise RuntimeError("IG container ERROR")
             time.sleep(5)
         raise RuntimeError("IG container timeout")
-    if len(media) > 1:
+    if len(media) == 1 and is_video(media[0]):
+        # Reels: вертикальное видео; обработка дольше, чем у картинки
+        cont = post(f"/{ig}/media", media_type="REELS", video_url=raw_url(media[0]),
+                    caption=text, share_to_feed="true")
+        wait(cont["id"], tries=48)  # до 4 минут на перекодирование
+    elif len(media) > 1:
         kids = []
         for p in media:
             c = post(f"/{ig}/media", image_url=raw_url(p), is_carousel_item="true"); kids.append(c["id"])
         cont = post(f"/{ig}/media", media_type="CAROUSEL", children=",".join(kids), caption=text)
+        wait(cont["id"])
     else:
         cont = post(f"/{ig}/media", image_url=raw_url(media[0]), caption=text)
-    wait(cont["id"])
+        wait(cont["id"])
     time.sleep(15)  # инсте нужно «дойти» после FINISHED
     last = None
     for attempt in range(6):
@@ -156,6 +174,13 @@ def pub_fb(text, media):
     tok, page = env("META_PAGE_TOKEN"), env("FB_PAGE_ID")
     if not tok or not page: return "SKIP: нет ключей"
     g = "https://graph.facebook.com/v21.0"
+    if len(media) == 1 and is_video(media[0]):  # видеопост на страницу по публичной ссылке
+        rp = rel(media[0])
+        if not _warm_url(raw_url(rp)): raise RuntimeError(f"видео не появилось в raw-кэше: {rp}")
+        r = http_json(f"{g}/{page}/videos", data=urllib.parse.urlencode(
+            {"file_url": raw_url(rp), "description": text, "access_token": tok}).encode(), method="POST")
+        if "error" in r: raise RuntimeError(f"FB video: {r['error'].get('message')}")
+        return f"OK video_id={r.get('id')}"
     fields = {"message": text, "access_token": tok}
     fbids = []
     for p in media:
@@ -178,7 +203,7 @@ def main():
     now = datetime.now(timezone.utc)
     log = {"run_at": now.isoformat(), "results": []}
     manifests = sorted(QUEUE.glob("*/manifest.json"))
-    if not manifests: print("Очередь пуста — делать нечего."); 
+    if not manifests: print("Очередь пуста — делать нечего.")
     for mp in manifests:
         m = json.loads(mp.read_text(encoding="utf-8"))
         slot = m.get("slot_id", mp.parent.name)
@@ -199,10 +224,15 @@ def main():
                 except Exception as e:
                     entry["networks"][net] = f"ERROR: {e}"
             entry["status"] = "DONE"
-            # переносим в обработанные
+            # D-49: если всё вышло без ошибок — видео-исходники СТИРАЕМ (не храним мусор),
+            # манифест и картинки уезжают в logs/done/ как обычно.
+            no_err = all(not str(v).startswith("ERROR") for v in entry["networks"].values())
             done = LOGS / "done" / mp.parent.name
             done.mkdir(parents=True, exist_ok=True)
             for f in mp.parent.iterdir():
+                if no_err and is_video(f.name):
+                    f.unlink()
+                    continue
                 f.rename(done / f.name)
             mp.parent.rmdir()
         except Exception as e:
