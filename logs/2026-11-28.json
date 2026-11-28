@@ -24,6 +24,18 @@
           "status": "DONE"
         }
       ]
+    },
+    {
+      "run_at": "2026-11-28T00:37:46.980260+00:00",
+      "results": [
+        {
+          "slot": "test-ig-003",
+          "networks": {
+            "ig": "ERROR: IG HTTP 400: {\"error\":{\"message\":\"Media ID is not available\",\"code\":9007,\"type\":\"OAuthException\",\"error_subcode\":2207027,\"is_transient\":false,\"error_user_msg\":\"Медиаданные не готовы к публикации. Немного подождите.\",\"error_user_title\":\"Не удалось опубликовать\",\"fbtrace_id\":\"A0CvBTZ4ws3i974DRd0Ksid\"}}"
+          },
+          "status": "DONE"
+        }
+      ]
     }
   ]
 }
