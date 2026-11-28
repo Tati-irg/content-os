@@ -91,13 +91,33 @@ def pub_vk(text, media):
     r = call("wall.post", owner_id=f"-{gid}", from_group=1, message=text, attachments=",".join(attachments))
     return f"OK post_id={r.get('post_id')}"
 
+def _warm_url(url, tries=12, pause=15):
+    """Ждём, пока raw-кэш GitHub увидит свежий файл (иначе Meta получит 404)."""
+    import urllib.error
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(url, method="HEAD")
+            with urllib.request.urlopen(req, timeout=30) as r:
+                if r.status == 200: return True
+        except Exception:
+            pass
+        time.sleep(pause)
+    return False
+
 def pub_ig(text, media):
     tok, ig = env("META_PAGE_TOKEN"), env("IG_USER_ID")
     if not tok or not ig: return "SKIP: нет ключей"
+    for p in media:
+        if not _warm_url(raw_url(p)): raise RuntimeError(f"картинка не появилась в raw-кэше: {p}")
     g = "https://graph.facebook.com/v21.0"
     def post(url, **params):
+        import urllib.error
         params["access_token"] = tok
-        r = http_json(g + url, data=urllib.parse.urlencode(params).encode(), method="POST")
+        try:
+            r = http_json(g + url, data=urllib.parse.urlencode(params).encode(), method="POST")
+        except urllib.error.HTTPError as e:
+            body = e.read().decode()[:400]
+            raise RuntimeError(f"IG HTTP {e.code}: {body}")
         if "error" in r: raise RuntimeError(f"IG: {r['error'].get('message')}")
         return r
     def wait(cid):
